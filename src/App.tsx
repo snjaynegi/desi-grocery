@@ -8,6 +8,9 @@ import { CartProvider } from "./context/CartContext";
 import { Suspense } from "react";
 import "./i18n/config";
 import Index from "./pages/Index";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Cart from "./pages/Cart";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +25,9 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/cart" element={<Cart />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

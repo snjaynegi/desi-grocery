@@ -1,13 +1,17 @@
 
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "../components/LanguageSelector";
-import { useEffect } from "react";
+import { useState } from "react";
 import { useCart } from "../context/CartContext";
 import { toast } from "@/components/ui/use-toast";
+import { Link, useNavigate } from "react-router-dom";
+import { Input } from "@/components/ui/input";
 
 const Index = () => {
   const { t } = useTranslation();
   const { state, dispatch } = useCart();
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
 
   const dummyProducts = [
     {
@@ -96,6 +100,10 @@ const Index = () => {
     }
   ];
 
+  const filteredProducts = dummyProducts.filter((product) =>
+    t(product.name).toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const handleAddToCart = (product: any) => {
     dispatch({
       type: "ADD_ITEM",
@@ -117,7 +125,7 @@ const Index = () => {
             </h1>
             <div className="flex items-center space-x-4">
               <LanguageSelector />
-              <button className="relative">
+              <Link to="/cart" className="relative">
                 <span className="sr-only">{t("Cart")}</span>
                 <svg
                   className="w-6 h-6 text-gray-700"
@@ -135,26 +143,37 @@ const Index = () => {
                     {state.items.length}
                   </span>
                 )}
-              </button>
+              </Link>
             </div>
+          </div>
+          <div className="mt-4">
+            <Input
+              type="search"
+              placeholder={t("Search")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full max-w-md mx-auto"
+            />
           </div>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {dummyProducts.map((product) => (
+          {filteredProducts.map((product) => (
             <div
               key={product.id}
               className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 animate-slideUp"
             >
-              <div className="aspect-square overflow-hidden">
-                <img
-                  src={product.image}
-                  alt={t(product.name)}
-                  className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-200"
-                />
-              </div>
+              <Link to={`/product/${product.id}`} className="block">
+                <div className="aspect-square overflow-hidden">
+                  <img
+                    src={product.image}
+                    alt={t(product.name)}
+                    className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-200"
+                  />
+                </div>
+              </Link>
               <div className="p-4">
                 <div className="inline-block px-2 py-1 mb-2 text-xs font-medium text-primary bg-primary/10 rounded-full">
                   {t(product.category)}

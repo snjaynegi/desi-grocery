@@ -103,7 +103,7 @@ const Index = () => {
     });
     toast({
       title: t("Item added to cart"),
-      description: product.name,
+      description: t(product.name),
     });
   };
 
@@ -118,7 +118,7 @@ const Index = () => {
             <div className="flex items-center space-x-4">
               <LanguageSelector />
               <button className="relative">
-                <span className="sr-only">Cart</span>
+                <span className="sr-only">{t("Cart")}</span>
                 <svg
                   className="w-6 h-6 text-gray-700"
                   fill="none"
@@ -151,16 +151,16 @@ const Index = () => {
               <div className="aspect-square overflow-hidden">
                 <img
                   src={product.image}
-                  alt={product.name}
+                  alt={t(product.name)}
                   className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-200"
                 />
               </div>
               <div className="p-4">
                 <div className="inline-block px-2 py-1 mb-2 text-xs font-medium text-primary bg-primary/10 rounded-full">
-                  {product.category}
+                  {t(product.category)}
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900">
-                  {product.name}
+                  {t(product.name)}
                 </h3>
                 <p className="text-gray-600">₹{product.price}</p>
                 <button

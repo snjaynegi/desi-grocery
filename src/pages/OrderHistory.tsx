@@ -21,8 +21,8 @@ interface Order {
 
 const OrderHistory = () => {
   const { t } = useTranslation();
-  const [year, setYear] = useState<string>("");
-  const [month, setMonth] = useState<string>("");
+  const [year, setYear] = useState<string>("all");  // Changed from "" to "all"
+  const [month, setMonth] = useState<string>("all"); // Changed from "" to "all"
 
   // Mock orders data - in a real app, this would come from an API
   const orders: Order[] = [
@@ -48,8 +48,8 @@ const OrderHistory = () => {
 
   const filteredOrders = orders.filter(order => {
     const orderDate = new Date(order.date);
-    const matchesYear = !year || orderDate.getFullYear().toString() === year;
-    const matchesMonth = !month || (orderDate.getMonth() + 1).toString().padStart(2, '0') === month;
+    const matchesYear = year === "all" || orderDate.getFullYear().toString() === year;
+    const matchesMonth = month === "all" || (orderDate.getMonth() + 1).toString().padStart(2, '0') === month;
     return matchesYear && matchesMonth;
   });
 
@@ -65,7 +65,7 @@ const OrderHistory = () => {
               <SelectValue placeholder={t("Year")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">{t("All Years")}</SelectItem>
+              <SelectItem value="all">{t("All Years")}</SelectItem>
               {years.map(y => (
                 <SelectItem key={y} value={y}>{y}</SelectItem>
               ))}
@@ -77,7 +77,7 @@ const OrderHistory = () => {
               <SelectValue placeholder={t("Month")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">{t("All Months")}</SelectItem>
+              <SelectItem value="all">{t("All Months")}</SelectItem>
               {months.map(m => (
                 <SelectItem key={m} value={m}>
                   {new Date(2000, parseInt(m) - 1).toLocaleString('default', { month: 'long' })}

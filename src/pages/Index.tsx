@@ -1,16 +1,18 @@
 
 import { useTranslation } from "react-i18next";
-import LanguageSelector from "../components/LanguageSelector";
 import { useState } from "react";
 import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 import { toast } from "@/components/ui/use-toast";
-import { Link, useNavigate } from "react-router-dom";
-import { Input } from "@/components/ui/input";
+import { Link } from "react-router-dom";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import { Heart } from "lucide-react";
 
 const Index = () => {
   const { t } = useTranslation();
   const { state, dispatch } = useCart();
-  const navigate = useNavigate();
+  const { state: wishlistState, dispatch: wishlistDispatch } = useWishlist();
   const [searchQuery, setSearchQuery] = useState("");
 
   const dummyProducts = [
@@ -115,50 +117,35 @@ const Index = () => {
     });
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">
-              {t("Desi Grocery")}
-            </h1>
-            <div className="flex items-center space-x-4">
-              <LanguageSelector />
-              <Link to="/cart" className="relative">
-                <span className="sr-only">{t("Cart")}</span>
-                <svg
-                  className="w-6 h-6 text-gray-700"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                </svg>
-                {state.items.length > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {state.items.length}
-                  </span>
-                )}
-              </Link>
-            </div>
-          </div>
-          <div className="mt-4">
-            <Input
-              type="search"
-              placeholder={t("Search")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full max-w-md mx-auto"
-            />
-          </div>
-        </div>
-      </header>
+  const handleToggleWishlist = (product: any) => {
+    const isInWishlist = wishlistState.items.some(item => item.id === product.id);
+    
+    if (isInWishlist) {
+      wishlistDispatch({
+        type: "REMOVE_FROM_WISHLIST",
+        payload: product.id,
+      });
+      toast({
+        title: t("Removed from wishlist"),
+        description: t(product.name),
+      });
+    } else {
+      wishlistDispatch({
+        type: "ADD_TO_WISHLIST",
+        payload: product,
+      });
+      toast({
+        title: t("Added to wishlist"),
+        description: t(product.name),
+      });
+    }
+  };
 
-      <main className="container mx-auto px-4 py-8">
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Header showSearch searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+      
+      <main className="flex-grow container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredProducts.map((product) => (
             <div
@@ -175,8 +162,22 @@ const Index = () => {
                 </div>
               </Link>
               <div className="p-4">
-                <div className="inline-block px-2 py-1 mb-2 text-xs font-medium text-primary bg-primary/10 rounded-full">
-                  {t(product.category)}
+                <div className="flex justify-between items-start mb-2">
+                  <div className="inline-block px-2 py-1 text-xs font-medium text-primary bg-primary/10 rounded-full">
+                    {t(product.category)}
+                  </div>
+                  <button
+                    onClick={() => handleToggleWishlist(product)}
+                    className="text-gray-400 hover:text-red-500 transition-colors duration-300"
+                  >
+                    <Heart
+                      className={`w-5 h-5 transition-all duration-300 ${
+                        wishlistState.items.some(item => item.id === product.id)
+                          ? "fill-red-500 text-red-500 scale-110"
+                          : ""
+                      }`}
+                    />
+                  </button>
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900">
                   {t(product.name)}
@@ -193,6 +194,8 @@ const Index = () => {
           ))}
         </div>
       </main>
+      
+      <Footer />
     </div>
   );
 };

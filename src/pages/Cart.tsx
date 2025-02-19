@@ -1,11 +1,24 @@
 
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useCart } from "../context/CartContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "@/components/ui/use-toast";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Cart = () => {
   const { t } = useTranslation();
   const { state, dispatch } = useCart();
+  const navigate = useNavigate();
+  const [paymentMethod, setPaymentMethod] = useState("");
 
   const handleUpdateQuantity = (id: string, quantity: number) => {
     if (quantity < 1) {
@@ -15,26 +28,52 @@ const Cart = () => {
     }
   };
 
+  const handleCheckout = () => {
+    if (!paymentMethod) {
+      toast({
+        title: t("Select payment method"),
+        description: t("Please select a payment method to continue"),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // In a real app, this would process the payment
+    toast({
+      title: t("Order placed successfully"),
+      description: t("Thank you for your purchase!"),
+    });
+
+    // Clear cart and redirect to orders
+    dispatch({ type: "CLEAR_CART" });
+    navigate("/orders");
+  };
+
   if (state.items.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
-          {t("Your cart is empty")}
-        </h2>
-        <p className="text-gray-600 mb-8">{t("Add some items to get started")}</p>
-        <Link
-          to="/"
-          className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors"
-        >
-          {t("Continue Shopping")}
-        </Link>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Header />
+        <div className="flex-grow flex flex-col items-center justify-center p-4">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            {t("Your cart is empty")}
+          </h2>
+          <p className="text-gray-600 mb-8">{t("Add some items to get started")}</p>
+          <Link
+            to="/"
+            className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            {t("Continue Shopping")}
+          </Link>
+        </div>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Header />
+      <div className="flex-grow container mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-8">{t("Cart")}</h1>
         <div className="bg-white rounded-lg shadow">
           <div className="p-6 space-y-4">
@@ -89,16 +128,36 @@ const Cart = () => {
             ))}
           </div>
           <div className="border-t border-gray-200 p-6">
-            <div className="flex justify-between items-center">
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {t("Payment Method")}
+              </label>
+              <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t("Select payment method")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cod">{t("Cash on Delivery")}</SelectItem>
+                  <SelectItem value="upi">{t("UPI")}</SelectItem>
+                  <SelectItem value="netbanking">{t("Net Banking")}</SelectItem>
+                  <SelectItem value="card">{t("Debit/Credit Card")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex justify-between items-center mb-4">
               <span className="text-lg font-semibold">{t("Total")}</span>
               <span className="text-2xl font-bold">₹{state.total}</span>
             </div>
-            <button className="mt-4 w-full bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors">
+            <button
+              onClick={handleCheckout}
+              className="w-full bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors"
+            >
               {t("Proceed to Checkout")}
             </button>
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

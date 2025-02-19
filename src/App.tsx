@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
 import { WishlistProvider } from "./context/WishlistContext";
+import { ThemeProvider } from "./context/ThemeContext";
 import { Suspense } from "react";
 import "./i18n/config";
 import Index from "./pages/Index";
@@ -15,32 +16,67 @@ import Cart from "./pages/Cart";
 import Wishlist from "./pages/Wishlist";
 import ProductDetail from "./pages/ProductDetail";
 import NotFound from "./pages/NotFound";
+import PrivateRoute from "./components/PrivateRoute";
+import OrderHistory from "./pages/OrderHistory";
+import Grievance from "./pages/Grievance";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <CartProvider>
-      <WishlistProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Suspense fallback={<div>Loading...</div>}>
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/wishlist" element={<Wishlist />} />
-                <Route path="/product/:id" element={<ProductDetail />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </Suspense>
-        </TooltipProvider>
-      </WishlistProvider>
-    </CartProvider>
+    <ThemeProvider>
+      <CartProvider>
+        <WishlistProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <Suspense fallback={<div>Loading...</div>}>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/signup" element={<Signup />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
+                  <Route
+                    path="/cart"
+                    element={
+                      <PrivateRoute>
+                        <Cart />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/wishlist"
+                    element={
+                      <PrivateRoute>
+                        <Wishlist />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/orders"
+                    element={
+                      <PrivateRoute>
+                        <OrderHistory />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/grievance"
+                    element={
+                      <PrivateRoute>
+                        <Grievance />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </Suspense>
+          </TooltipProvider>
+        </WishlistProvider>
+      </CartProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

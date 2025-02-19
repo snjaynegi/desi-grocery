@@ -19,6 +19,7 @@ import NotFound from "./pages/NotFound";
 import PrivateRoute from "./components/PrivateRoute";
 import OrderHistory from "./pages/OrderHistory";
 import Grievance from "./pages/Grievance";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +67,14 @@ const App = () => (
                     element={
                       <PrivateRoute>
                         <Grievance />
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path="/profile"
+                    element={
+                      <PrivateRoute>
+                        <Profile />
                       </PrivateRoute>
                     }
                   />

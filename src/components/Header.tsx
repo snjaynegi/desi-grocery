@@ -1,13 +1,10 @@
 
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import LanguageSelector from "./LanguageSelector";
 import { useCart } from "../context/CartContext";
 import { useTheme } from "../context/ThemeContext";
 import { Input } from "./ui/input";
-import { Moon, Sun, Heart, ZoomIn, ZoomOut } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Switch } from "./ui/switch";
+import { Moon, Sun, Heart } from "lucide-react";
 
 interface HeaderProps {
   showSearch?: boolean;
@@ -18,7 +15,7 @@ interface HeaderProps {
 const Header = ({ showSearch, searchQuery, onSearchChange }: HeaderProps) => {
   const { t } = useTranslation();
   const { state } = useCart();
-  const { isDarkMode, toggleDarkMode, textSize, setTextSize, isHighContrast, toggleHighContrast } = useTheme();
+  const { isDarkMode, toggleDarkMode } = useTheme();
 
   return (
     <header className="bg-gradient-to-r from-[#F1F0FB] to-white shadow-md dark:from-green-900 dark:to-gray-900">
@@ -33,38 +30,13 @@ const Header = ({ showSearch, searchQuery, onSearchChange }: HeaderProps) => {
           </Link>
 
           <div className="flex items-center space-x-6">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={toggleDarkMode}
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-                aria-label={isDarkMode ? t("Switch to light mode") : t("Switch to dark mode")}
-              >
-                {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </button>
-
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600 dark:text-gray-300">{t("Text Size")}:</span>
-                <Select value={textSize} onValueChange={setTextSize}>
-                  <SelectTrigger className="w-24" aria-label={t("Select text size")}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="small">{t("Small")}</SelectItem>
-                    <SelectItem value="medium">{t("Medium")}</SelectItem>
-                    <SelectItem value="large">{t("Large")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600 dark:text-gray-300">{t("High Contrast")}:</span>
-                <Switch
-                  checked={isHighContrast}
-                  onCheckedChange={toggleHighContrast}
-                  aria-label={t("Toggle high contrast mode")}
-                />
-              </div>
-            </div>
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+              aria-label={isDarkMode ? t("Switch to light mode") : t("Switch to dark mode")}
+            >
+              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
 
             <Link
               to="/login"
@@ -87,7 +59,6 @@ const Header = ({ showSearch, searchQuery, onSearchChange }: HeaderProps) => {
             >
               <Heart className="w-6 h-6" />
             </Link>
-            <LanguageSelector />
             <Link to="/cart" className="relative" aria-label={t("Cart")}>
               <svg
                 className="w-6 h-6 text-gray-700 hover:text-primary transition-colors dark:text-gray-300"

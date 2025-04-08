@@ -122,11 +122,21 @@
 }
 
 .dark .text-gray-600,
-.dark .text-gray-700 {
+.dark .text-gray-700,
+.dark .text-gray-800 {
   @apply text-gray-300;
 }
 
 .dark .shadow,
 .dark .shadow-md {
   @apply shadow-gray-800/50;
+}
+
+/* Additional dark mode styles for profile page and sidebar */
+.dark .sidebar {
+  @apply bg-gray-800 border-gray-700;
+}
+
+.dark .tab-content {
+  @apply bg-gray-800 text-gray-200 border-gray-700;
 }

@@ -1,4 +1,15 @@
 
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  phone?: string;
+  createdAt: string;
+  addresses?: Address[];
+  preferences?: UserPreferences;
+}
+
 export interface Address {
   id: string;
   type: 'home' | 'work' | 'other';
@@ -9,40 +20,42 @@ export interface Address {
   isDefault: boolean;
 }
 
-export interface PaymentMethod {
-  id: string;
-  type: 'card' | 'upi' | 'paypal';
-  lastFourDigits?: string;
-  isDefault: boolean;
-  expiryDate?: string;
-}
-
 export interface UserPreferences {
-  notifications: {
+  theme?: 'light' | 'dark';
+  language?: string;
+  notifications?: {
     email: boolean;
+    push: boolean;
     sms: boolean;
-    app: boolean;
   };
-  dietary: string[];
-  accessibility: {
-    highContrast: boolean;
-    screenReader: boolean;
-    textSize: 'small' | 'medium' | 'large';
-  };
-  defaultDeliverySlot: string;
+  dietaryPreferences?: string[];
 }
 
-export interface UserProfile {
+export interface Product {
   id: string;
   name: string;
-  email: string;
-  phone: string;
-  profilePicture?: string;
-  addresses: Address[];
-  preferredLanguage: string;
-  paymentMethods: PaymentMethod[];
-  walletBalance: number;
-  membershipStatus: 'basic' | 'premium';
-  loyaltyPoints: number;
-  preferences: UserPreferences;
+  price: number;
+  image: string;
+  category: string;
+  tags?: string[];
+  description?: string;
+  origin?: string;
+  inStock?: boolean;
+  quantity?: number;
+}
+
+export interface CartItem extends Product {
+  quantity: number;
+}
+
+export interface Order {
+  id: string;
+  userId: string;
+  items: CartItem[];
+  totalAmount: number;
+  shippingAddress: Address;
+  paymentMethod: string;
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  orderDate: string;
+  deliveryDate?: string;
 }

@@ -4,7 +4,18 @@ import { useTranslation } from "react-i18next";
 import { useCart } from "../context/CartContext";
 import { useTheme } from "../context/ThemeContext";
 import { Input } from "./ui/input";
-import { Moon, Sun, Heart } from "lucide-react";
+import { Moon, Sun, Heart, User, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useNavigate } from "react-router-dom";
+import { toast } from "@/components/ui/use-toast";
 
 interface HeaderProps {
   showSearch?: boolean;
@@ -16,6 +27,47 @@ const Header = ({ showSearch, searchQuery, onSearchChange }: HeaderProps) => {
   const { t } = useTranslation();
   const { state } = useCart();
   const { isDarkMode, toggleDarkMode } = useTheme();
+  const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState<{name?: string, email?: string} | null>(null);
+
+  useEffect(() => {
+    // Check login status on mount and whenever localStorage changes
+    const checkLoginStatus = () => {
+      const loggedIn = localStorage.getItem("isLoggedIn") === "true";
+      setIsLoggedIn(loggedIn);
+      
+      if (loggedIn) {
+        try {
+          const user = JSON.parse(localStorage.getItem("currentUser") || "{}");
+          setCurrentUser(user);
+        } catch (error) {
+          console.error("Failed to parse user data", error);
+          setCurrentUser(null);
+        }
+      } else {
+        setCurrentUser(null);
+      }
+    };
+
+    checkLoginStatus();
+    
+    // Listen for storage events (in case user logs in/out in another tab)
+    window.addEventListener("storage", checkLoginStatus);
+    return () => window.removeEventListener("storage", checkLoginStatus);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("isLoggedIn");
+    localStorage.removeItem("currentUser");
+    setIsLoggedIn(false);
+    setCurrentUser(null);
+    toast({
+      title: t("Logged out"),
+      description: t("You have been successfully logged out"),
+    });
+    navigate("/");
+  };
 
   return (
     <header className="bg-gradient-to-r from-[#F1F0FB] to-white shadow-md dark:from-green-900 dark:to-gray-900">
@@ -38,20 +90,47 @@ const Header = ({ showSearch, searchQuery, onSearchChange }: HeaderProps) => {
               {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
 
-            <Link
-              to="/login"
-              className="text-gray-600 hover:text-primary transition-colors dark:text-gray-300"
-              aria-label={t("Sign in")}
-            >
-              {t("Sign in")}
-            </Link>
-            <Link
-              to="/signup"
-              className="text-gray-600 hover:text-primary transition-colors dark:text-gray-300"
-              aria-label={t("Sign up")}
-            >
-              {t("Sign up")}
-            </Link>
+            {isLoggedIn ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center space-x-2 text-gray-600 hover:text-primary transition-colors dark:text-gray-300">
+                  <User className="w-5 h-5" />
+                  <span className="hidden sm:inline">{currentUser?.name || t("Account")}</span>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-white dark:bg-gray-800 border dark:border-gray-700">
+                  <DropdownMenuLabel className="dark:text-gray-300">{currentUser?.email}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/profile")} className="dark:text-gray-300 cursor-pointer">
+                    {t("Profile Settings")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/orders")} className="dark:text-gray-300 cursor-pointer">
+                    {t("Order History")}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-500 dark:text-red-400 cursor-pointer">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    {t("Logout")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="text-gray-600 hover:text-primary transition-colors dark:text-gray-300"
+                  aria-label={t("Sign in")}
+                >
+                  {t("Sign in")}
+                </Link>
+                <Link
+                  to="/signup"
+                  className="text-gray-600 hover:text-primary transition-colors dark:text-gray-300"
+                  aria-label={t("Sign up")}
+                >
+                  {t("Sign up")}
+                </Link>
+              </>
+            )}
+            
             <Link
               to="/wishlist"
               className="text-gray-600 hover:text-primary transition-colors dark:text-gray-300"

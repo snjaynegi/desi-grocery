@@ -12,12 +12,23 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
-    // Apply dark mode
+    // Check if user has previously set a preference
+    const savedMode = localStorage.getItem("darkMode");
+    if (savedMode === "true") {
+      setIsDarkMode(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Apply dark mode to the entire document
     if (isDarkMode) {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
+    
+    // Save preference to localStorage
+    localStorage.setItem("darkMode", String(isDarkMode));
   }, [isDarkMode]);
 
   const toggleDarkMode = () => setIsDarkMode(!isDarkMode);

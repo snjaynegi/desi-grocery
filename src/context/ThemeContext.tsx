@@ -16,6 +16,12 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     const savedMode = localStorage.getItem("darkMode");
     if (savedMode === "true") {
       setIsDarkMode(true);
+    } else {
+      // Check system preference if no saved preference
+      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (prefersDark) {
+        setIsDarkMode(true);
+      }
     }
   }, []);
 

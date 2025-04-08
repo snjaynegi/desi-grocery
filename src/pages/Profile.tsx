@@ -58,14 +58,14 @@ const Profile = () => {
     <div className={`min-h-screen flex flex-col ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50'}`}>
       <Header />
       <div className="flex-grow container mx-auto px-4 py-8">
-        <h1 className={`text-2xl font-bold mb-6 ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+        <h1 className={`text-2xl font-bold mb-6 md:pl-4 ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
           {t("My Profile")}
         </h1>
 
         <SidebarProvider defaultOpen={true}>
           <div className="flex min-h-[70vh] w-full">
             <Sidebar>
-              <SidebarContent>
+              <SidebarContent className="mt-2">
                 <SidebarMenu>
                   {menuItems.map((item) => (
                     <SidebarMenuItem key={item.id}>

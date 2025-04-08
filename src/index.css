@@ -141,6 +141,18 @@
   @apply bg-gray-800 text-gray-200 border-gray-700;
 }
 
+/* Profile page specific styles */
+.profile-container {
+  padding-top: 1rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .profile-container {
+    padding-top: 2rem;
+  }
+}
+
 /* Add new animation classes */
 @keyframes fadeIn {
   from { opacity: 0; }

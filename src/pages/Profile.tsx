@@ -57,7 +57,7 @@ const Profile = () => {
   return (
     <div className={`min-h-screen flex flex-col ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50'}`}>
       <Header />
-      <div className="flex-grow container mx-auto px-4 py-8">
+      <div className="flex-grow container mx-auto pt-16 px-4 pb-8">
         <h1 className={`text-2xl font-bold mb-6 md:pl-4 ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
           {t("My Profile")}
         </h1>
@@ -65,7 +65,7 @@ const Profile = () => {
         <SidebarProvider defaultOpen={true}>
           <div className="flex min-h-[70vh] w-full">
             <Sidebar>
-              <SidebarContent className="mt-2">
+              <SidebarContent className="mt-4">
                 <SidebarMenu>
                   {menuItems.map((item) => (
                     <SidebarMenuItem key={item.id}>
@@ -83,7 +83,7 @@ const Profile = () => {
               </SidebarContent>
             </Sidebar>
             <SidebarInset>
-              <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow`}>
+              <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow animate-fadeIn`}>
                 {activeTab === "personal" && <PersonalInfo />}
                 {activeTab === "orders" && <OrderHistory />}
                 {activeTab === "payments" && <PaymentSettings />}

@@ -31,6 +31,15 @@ export interface UserPreferences {
   dietaryPreferences?: string[];
 }
 
+export interface PaymentMethod {
+  id: string;
+  type: 'card' | 'paypal' | 'bank';
+  lastFourDigits: string;
+  expiryDate?: string;
+  isDefault: boolean;
+  cardType?: 'visa' | 'mastercard' | 'amex' | 'discover';
+}
+
 export interface Product {
   id: string;
   name: string;

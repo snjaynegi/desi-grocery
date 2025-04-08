@@ -128,12 +128,12 @@ const Cart = () => {
             ))}
           </div>
           <div className="border-t border-gray-200 p-6">
-            <div className="mb-4">
+            <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {t("Payment Method")}
               </label>
               <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-white dark:bg-gray-800">
                   <SelectValue placeholder={t("Select payment method")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -144,13 +144,13 @@ const Cart = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-6">
               <span className="text-lg font-semibold">{t("Total")}</span>
-              <span className="text-2xl font-bold">₹{state.total}</span>
+              <span className="text-2xl font-bold text-green-700">₹{state.total}</span>
             </div>
             <button
               onClick={handleCheckout}
-              className="w-full bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors"
+              className="w-full bg-green-700 text-white px-6 py-4 rounded-lg hover:bg-green-800 transition-colors font-medium text-lg"
             >
               {t("Proceed to Checkout")}
             </button>

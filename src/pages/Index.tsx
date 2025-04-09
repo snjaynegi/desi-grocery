@@ -17,14 +17,14 @@ import {
 const Index = () => {
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   // Get unique categories from products
   const categories = [...new Set(dummyProducts.map(product => product.category))];
 
   const filteredProducts = dummyProducts.filter((product) => {
     const matchesSearch = t(product.name).toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === "" || product.category === selectedCategory;
+    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -48,7 +48,7 @@ const Index = () => {
                 <SelectValue placeholder={t("All Categories")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">{t("All Categories")}</SelectItem>
+                <SelectItem value="all">{t("All Categories")}</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category} value={category}>
                     {t(category)}

@@ -34,7 +34,7 @@ const Preferences = () => {
 
       <div>
         <h2 className="text-xl font-semibold mb-4">{t("Dietary Preferences")}</h2>
-        <Select>
+        <Select defaultValue="none">
           <SelectTrigger>
             <SelectValue placeholder={t("Select dietary preferences")} />
           </SelectTrigger>
@@ -58,7 +58,7 @@ const Preferences = () => {
             <label className="text-sm font-medium">{t("Screen Reader Support")}</label>
             <Switch />
           </div>
-          <Select>
+          <Select defaultValue="medium">
             <SelectTrigger>
               <SelectValue placeholder={t("Text Size")} />
             </SelectTrigger>

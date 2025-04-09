@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import ProductGrid from "../components/ProductGrid";
-import { dummyProducts } from "../data/products";
+import { extendedProducts } from "../data/products";
 import { Filter } from "lucide-react";
 import {
   Select,
@@ -20,9 +20,9 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState("all");
 
   // Get unique categories from products
-  const categories = [...new Set(dummyProducts.map(product => product.category))];
+  const categories = [...new Set(extendedProducts.map(product => product.category))];
 
-  const filteredProducts = dummyProducts.filter((product) => {
+  const filteredProducts = extendedProducts.filter((product) => {
     const matchesSearch = t(product.name).toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
     return matchesSearch && matchesCategory;

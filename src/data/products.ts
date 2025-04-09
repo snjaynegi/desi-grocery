@@ -537,14 +537,14 @@ const generateExtendedProducts = (): Product[] => {
   const baseProducts = [...dummyProducts];
   const extendedProducts: Product[] = [...baseProducts];
   
-  const variantsNeeded = 2000 - baseProducts.length;
+  const variantsNeeded = 500 - baseProducts.length;
   const variantsPerProduct = Math.ceil(variantsNeeded / baseProducts.length);
   
   for (let i = 0; i < baseProducts.length; i++) {
     const baseProduct = baseProducts[i];
     
     for (let j = 1; j <= variantsPerProduct; j++) {
-      if (extendedProducts.length >= 2000) break;
+      if (extendedProducts.length >= 500) break;
       
       const variantId = `${baseProduct.id}-v${j}`;
       let variantName = baseProduct.name;
@@ -572,7 +572,7 @@ const generateExtendedProducts = (): Product[] => {
     }
   }
   
-  return extendedProducts.slice(0, 2000);
+  return extendedProducts.slice(0, 500);
 };
 
 export const extendedProducts = generateExtendedProducts();

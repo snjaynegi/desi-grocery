@@ -76,7 +76,7 @@ const OrderHistory = () => {
       <h2 className="text-xl font-semibold">{t("Order History")}</h2>
       <div className="space-y-4">
         {orders.map((order) => (
-          <div key={order.id} className="border rounded-lg p-4">
+          <div key={order.id} className="border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <p className="font-medium">
@@ -84,6 +84,9 @@ const OrderHistory = () => {
                 </p>
                 <p className="text-sm text-gray-600">
                   {new Date(order.date).toLocaleDateString()}
+                </p>
+                <p className="text-sm mt-1 inline-block px-2 py-0.5 bg-green-100 text-green-800 rounded-full">
+                  {order.status}
                 </p>
               </div>
               <p className="text-lg font-semibold">₹{getFinalTotal(order)}</p>
@@ -113,17 +116,17 @@ const OrderHistory = () => {
             <div className="mt-4 flex gap-4">
               <button
                 onClick={() => handleReorder(order)}
-                className="text-primary hover:text-primary/90"
+                className="text-primary hover:text-primary/90 text-sm py-1 px-3 border border-primary/30 rounded-full hover:bg-primary/10 transition-colors"
                 aria-label={t("Reorder items from order") + ` #${order.id}`}
               >
                 {t("Reorder")}
               </button>
               <button
                 onClick={() => handleDownloadInvoice(order.id)}
-                className="text-primary hover:text-primary/90 flex items-center gap-1"
+                className="text-primary hover:text-primary/90 flex items-center gap-1 text-sm py-1 px-3 border border-primary/30 rounded-full hover:bg-primary/10 transition-colors"
                 aria-label={t("Download invoice for order") + ` #${order.id}`}
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-3 h-3" />
                 {t("Invoice")}
               </button>
             </div>

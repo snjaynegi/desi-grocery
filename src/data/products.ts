@@ -1,4 +1,3 @@
-
 export interface Product {
   id: string;
   name: string;
@@ -10,6 +9,17 @@ export interface Product {
   origin?: string;
   inStock?: boolean;
 }
+
+const getFallbackImage = (category: string) => {
+  const fallbackImages = {
+    vegetables: "https://images.unsplash.com/photo-1518977676601-b53f82aba655",
+    fruits: "https://images.unsplash.com/photo-1560807707-8cc77767d783",
+    staples: "https://images.unsplash.com/photo-1610725664285-7c57e6eeac3f",
+    default: "https://images.unsplash.com/photo-1578687635445-f96693eae195"
+  };
+  
+  return fallbackImages[category as keyof typeof fallbackImages] || fallbackImages.default;
+};
 
 export const dummyProducts: Product[] = [
   {
@@ -132,7 +142,6 @@ export const dummyProducts: Product[] = [
     origin: "Local",
     inStock: true,
   },
-  // Adding international/exotic fruits and vegetables
   {
     id: "13",
     name: "Dragon Fruit",
@@ -220,5 +229,352 @@ export const dummyProducts: Product[] = [
     description: "Vibrant purple sweet potatoes with rich flavor",
     origin: "Okinawa, Japan",
     inStock: true,
-  }
+  },
+  {
+    id: "21",
+    name: "Strawberries",
+    price: 120,
+    image: "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2",
+    category: "fruits",
+    description: "Sweet, juicy strawberries",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "22",
+    name: "Blueberries",
+    price: 180,
+    image: "https://images.unsplash.com/photo-1498557850523-fd3d118b962e",
+    category: "fruits",
+    description: "Fresh, antioxidant-rich blueberries",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "23",
+    name: "Watermelon",
+    price: 80,
+    image: "https://images.unsplash.com/photo-1589984662646-e7b2e4962f18",
+    category: "fruits",
+    description: "Sweet, refreshing watermelon",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "24",
+    name: "Pineapple",
+    price: 90,
+    image: "https://images.unsplash.com/photo-1589820296156-2454bb8a6ad1",
+    category: "fruits",
+    description: "Sweet and tangy pineapple",
+    origin: "Imported",
+    inStock: true,
+  },
+  {
+    id: "25",
+    name: "Oranges",
+    price: 60,
+    image: "https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b",
+    category: "fruits",
+    description: "Juicy, vitamin C-rich oranges",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "26",
+    name: "Pomegranate",
+    price: 140,
+    image: "https://images.unsplash.com/photo-1541344999736-83eca272f6fc",
+    category: "fruits",
+    description: "Antioxidant-rich pomegranate",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "27",
+    name: "Papaya",
+    price: 70,
+    image: "https://images.unsplash.com/photo-1517282009859-f000ec3b26fe",
+    category: "fruits",
+    description: "Sweet, tropical papaya",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "28",
+    name: "Guava",
+    price: 45,
+    image: "https://images.unsplash.com/photo-1536511132770-e5058c7e8c46",
+    category: "fruits",
+    description: "Fresh, vitamin-rich guavas",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "29",
+    name: "Lychee",
+    price: 220,
+    image: "https://images.unsplash.com/photo-1624823183493-ed5832f48f18",
+    category: "fruits",
+    tags: ["exotic", "seasonal"],
+    description: "Sweet, fragrant lychees",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "30",
+    name: "Custard Apple",
+    price: 160,
+    image: "https://images.unsplash.com/photo-1600707435583-35c8a3a2ffa3",
+    category: "fruits",
+    description: "Sweet, creamy custard apples",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "31",
+    name: "Spinach",
+    price: 30,
+    image: "https://images.unsplash.com/photo-1576045057995-568f588f82fb",
+    category: "vegetables",
+    description: "Fresh, iron-rich spinach leaves",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "32",
+    name: "Broccoli",
+    price: 65,
+    image: "https://images.unsplash.com/photo-1459411621453-7b03977f4bfc",
+    category: "vegetables",
+    description: "Nutritious broccoli florets",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "33",
+    name: "Cauliflower",
+    price: 50,
+    image: "https://images.unsplash.com/photo-1613743990305-d6a24239d48a",
+    category: "vegetables",
+    description: "Fresh cauliflower head",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "34",
+    name: "Cabbage",
+    price: 35,
+    image: "https://images.unsplash.com/photo-1551889774-349644cbb0b3",
+    category: "vegetables",
+    description: "Crunchy green cabbage",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "35",
+    name: "Eggplant",
+    price: 40,
+    image: "https://images.unsplash.com/photo-1634462860453-243df403118a",
+    category: "vegetables",
+    description: "Glossy purple eggplant",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "36",
+    name: "Zucchini",
+    price: 55,
+    image: "https://images.unsplash.com/photo-1583687355032-89b902b7335f",
+    category: "vegetables",
+    description: "Fresh green zucchini",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "37",
+    name: "Lady Finger",
+    price: 45,
+    image: "https://images.unsplash.com/photo-1425543103986-22abb7d7e8d2",
+    category: "vegetables",
+    description: "Tender, fresh lady finger",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "38",
+    name: "Bitter Gourd",
+    price: 35,
+    image: "https://images.unsplash.com/photo-1588391548564-53fc91c34071",
+    category: "vegetables",
+    description: "Nutritious bitter gourd",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "39",
+    name: "Bottle Gourd",
+    price: 30,
+    image: "https://images.unsplash.com/photo-1593465439767-38b054da6085",
+    category: "vegetables",
+    description: "Fresh bottle gourd",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "40",
+    name: "Garlic",
+    price: 25,
+    image: "https://images.unsplash.com/photo-1501420193726-1f65acd36cda",
+    category: "vegetables",
+    description: "Aromatic garlic bulbs",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "41",
+    name: "Whole Wheat Flour",
+    price: 60,
+    image: "https://images.unsplash.com/photo-1586444248888-f9b7a783c6fb",
+    category: "staples",
+    description: "Nutritious whole wheat flour",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "42",
+    name: "White Rice",
+    price: 85,
+    image: "https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6",
+    category: "staples",
+    description: "Premium quality white rice",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "43",
+    name: "Brown Rice",
+    price: 110,
+    image: "https://images.unsplash.com/photo-1595837037660-61eae83032bc",
+    category: "staples",
+    description: "Nutritious brown rice",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "44",
+    name: "Moong Dal",
+    price: 95,
+    image: "https://images.unsplash.com/photo-1604848698039-d84c2bb4b434",
+    category: "staples",
+    description: "Split yellow moong dal",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "45",
+    name: "Toor Dal",
+    price: 105,
+    image: "https://images.unsplash.com/photo-1516054575922-f0b8eeadec1a",
+    category: "staples",
+    description: "High-protein toor dal",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "46",
+    name: "Urad Dal",
+    price: 115,
+    image: "https://images.unsplash.com/photo-1596097635121-14b38b1826f6",
+    category: "staples",
+    description: "Black gram dal",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "47",
+    name: "Refined Flour",
+    price: 55,
+    image: "https://images.unsplash.com/photo-1615475347354-c0833a7d43bd",
+    category: "staples",
+    description: "Fine refined flour",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "48",
+    name: "Gram Flour",
+    price: 70,
+    image: "https://images.unsplash.com/photo-1567165639743-94c9e7d13289",
+    category: "staples",
+    description: "Chickpea flour (besan)",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "49",
+    name: "Semolina",
+    price: 45,
+    image: "https://images.unsplash.com/photo-1605493731111-a51f0c4e7780",
+    category: "staples",
+    description: "Fine semolina (sooji)",
+    origin: "Local",
+    inStock: true,
+  },
+  {
+    id: "50",
+    name: "Sugar",
+    price: 50,
+    image: "https://images.unsplash.com/photo-1584847592298-230920927eae",
+    category: "staples",
+    description: "Refined white sugar",
+    origin: "Local",
+    inStock: true,
+  },
 ];
+
+const generateExtendedProducts = (): Product[] => {
+  const baseProducts = [...dummyProducts];
+  const extendedProducts: Product[] = [...baseProducts];
+  
+  const variantsNeeded = 2000 - baseProducts.length;
+  const variantsPerProduct = Math.ceil(variantsNeeded / baseProducts.length);
+  
+  for (let i = 0; i < baseProducts.length; i++) {
+    const baseProduct = baseProducts[i];
+    
+    for (let j = 1; j <= variantsPerProduct; j++) {
+      if (extendedProducts.length >= 2000) break;
+      
+      const variantId = `${baseProduct.id}-v${j}`;
+      let variantName = baseProduct.name;
+      
+      if (baseProduct.category === "vegetables" || baseProduct.category === "fruits") {
+        const prefixes = ["Organic", "Premium", "Fresh", "Local", "Farm Fresh", "Seasonal"];
+        variantName = `${prefixes[j % prefixes.length]} ${baseProduct.name}`;
+      } else if (baseProduct.category === "staples") {
+        const prefixes = ["Premium", "Organic", "Whole Grain", "Stone-Ground", "Pure"];
+        variantName = `${prefixes[j % prefixes.length]} ${baseProduct.name}`;
+      }
+      
+      const priceVariation = 0.8 + (Math.random() * 0.4);
+      const variantPrice = Math.round(baseProduct.price * priceVariation);
+      
+      const variant: Product = {
+        ...baseProduct,
+        id: variantId,
+        name: variantName,
+        price: variantPrice,
+        image: baseProduct.image,
+      };
+      
+      extendedProducts.push(variant);
+    }
+  }
+  
+  return extendedProducts.slice(0, 2000);
+};
+
+export const extendedProducts = generateExtendedProducts();
+
+export default extendedProducts;

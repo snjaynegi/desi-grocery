@@ -1,7 +1,8 @@
 
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { Heart } from "lucide-react";
+import { Heart, ImageOff } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
@@ -22,6 +23,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const { t } = useTranslation();
   const { dispatch: cartDispatch } = useCart();
   const { state: wishlistState, dispatch: wishlistDispatch } = useWishlist();
+  const [imageError, setImageError] = useState(false);
 
   const handleAddToCart = () => {
     cartDispatch({
@@ -58,15 +60,39 @@ const ProductCard = ({ product }: ProductCardProps) => {
     }
   };
 
+  // Get fallback image based on category
+  const getFallbackImage = () => {
+    const fallbackImages = {
+      vegetables: "https://images.unsplash.com/photo-1518977676601-b53f82aba655",
+      fruits: "https://images.unsplash.com/photo-1560807707-8cc77767d783",
+      staples: "https://images.unsplash.com/photo-1610725664285-7c57e6eeac3f",
+    };
+    
+    return fallbackImages[product.category as keyof typeof fallbackImages] || "/placeholder.svg";
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 animate-slideUp">
       <Link to={`/product/${product.id}`} className="block">
-        <div className="aspect-square overflow-hidden">
-          <img
-            src={product.image}
-            alt={t(product.name)}
-            className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-200"
-          />
+        <div className="aspect-square overflow-hidden bg-gray-100">
+          {imageError ? (
+            <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-gray-100 text-gray-400">
+              <ImageOff className="w-8 h-8 mb-2" />
+              <span className="text-sm text-center">{t(product.name)}</span>
+            </div>
+          ) : (
+            <img
+              src={product.image}
+              alt={t(product.name)}
+              className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-200"
+              onError={(e) => {
+                setImageError(true);
+                // Try to load fallback image
+                const target = e.target as HTMLImageElement;
+                target.src = getFallbackImage();
+              }}
+            />
+          )}
         </div>
       </Link>
       <div className="p-4">
@@ -87,7 +113,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             />
           </button>
         </div>
-        <h3 className="text-lg font-semibold text-gray-900">
+        <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">
           {t(product.name)}
         </h3>
         <p className="text-gray-600">₹{product.price}</p>

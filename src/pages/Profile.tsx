@@ -55,17 +55,18 @@ const Profile = () => {
   ];
 
   return (
-    <div className={`min-h-screen flex flex-col ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50'}`}>
+    <div className={`min-h-screen flex flex-col ${isDarkMode ? 'dark bg-gray-900 text-gray-100' : 'bg-gray-50'}`}>
       <Header />
-      <div className="profile-container flex-grow container mx-auto mt-20 px-4 pb-8">
-        <h1 className={`text-2xl font-bold mb-6 md:pl-4 ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
+      
+      <div className="profile-main-container container mx-auto px-4">
+        <h1 className={`profile-heading text-2xl font-bold ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
           {t("My Profile")}
         </h1>
 
         <SidebarProvider defaultOpen={true}>
-          <div className="flex min-h-[70vh] w-full">
-            <Sidebar variant="inset">
-              <SidebarContent className="mt-4">
+          <div className="profile-content-wrapper flex w-full">
+            <Sidebar variant="inset" collapsible="icon">
+              <SidebarContent className="mt-2">
                 <SidebarMenu>
                   {menuItems.map((item) => (
                     <SidebarMenuItem key={item.id}>
@@ -83,7 +84,7 @@ const Profile = () => {
                 </SidebarMenu>
               </SidebarContent>
             </Sidebar>
-            <SidebarInset className="ml-2 md:ml-4">
+            <SidebarInset className="profile-tab-content ml-2 md:ml-4">
               <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow animate-fadeIn`}>
                 {activeTab === "personal" && <PersonalInfo />}
                 {activeTab === "orders" && <OrderHistory />}
@@ -99,7 +100,10 @@ const Profile = () => {
           </div>
         </SidebarProvider>
       </div>
-      <Footer />
+      
+      <div className="mt-auto">
+        <Footer />
+      </div>
     </div>
   );
 };

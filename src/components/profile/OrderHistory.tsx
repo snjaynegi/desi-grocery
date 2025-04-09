@@ -16,12 +16,26 @@ interface Order {
   items: OrderItem[];
   total: number;
   status: string;
+  commissionFee?: number;
 }
 
 const OrderHistory = () => {
   const { t } = useTranslation();
 
-  const orders: Order[] = []; // In a real app, this would come from an API
+  // In a real app, this would come from an API
+  const orders: Order[] = [
+    {
+      id: "ORD-123",
+      date: "2024-03-25",
+      items: [
+        { id: "1", name: "Fresh Tomatoes", quantity: 2, price: 40 },
+        { id: "2", name: "Organic Onions", quantity: 1, price: 35 }
+      ],
+      total: 115,
+      status: "Delivered",
+      commissionFee: 2 // 2% of 115, rounded to nearest integer
+    }
+  ];
 
   const handleDownloadInvoice = (orderId: string) => {
     // In a real app, this would trigger a PDF download
@@ -37,6 +51,16 @@ const OrderHistory = () => {
       title: t("Items added to cart"),
       description: t("All items from order") + ` #${order.id} ` + t("have been added to your cart"),
     });
+  };
+
+  // Calculate commission fee if not provided
+  const getCommissionFee = (order: Order) => {
+    return order.commissionFee || Math.round(order.total * 0.02);
+  };
+
+  // Calculate final total
+  const getFinalTotal = (order: Order) => {
+    return order.total + getCommissionFee(order);
   };
 
   if (orders.length === 0) {
@@ -62,7 +86,7 @@ const OrderHistory = () => {
                   {new Date(order.date).toLocaleDateString()}
                 </p>
               </div>
-              <p className="text-lg font-semibold">₹{order.total}</p>
+              <p className="text-lg font-semibold">₹{getFinalTotal(order)}</p>
             </div>
             <div className="space-y-2">
               {order.items.map((item) => (
@@ -73,6 +97,18 @@ const OrderHistory = () => {
                   <span>₹{item.price * item.quantity}</span>
                 </div>
               ))}
+              
+              {/* Commission fee line */}
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>{t("Commission Fee")} (2%)</span>
+                <span>₹{getCommissionFee(order)}</span>
+              </div>
+              
+              {/* Total line */}
+              <div className="flex justify-between font-medium pt-2 border-t">
+                <span>{t("Total")}</span>
+                <span>₹{getFinalTotal(order)}</span>
+              </div>
             </div>
             <div className="mt-4 flex gap-4">
               <button

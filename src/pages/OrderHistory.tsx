@@ -17,12 +17,13 @@ interface Order {
     price: number;
   }>;
   paymentMethod: string;
+  commissionFee?: number; // Added commission fee field
 }
 
 const OrderHistory = () => {
   const { t } = useTranslation();
-  const [year, setYear] = useState<string>("all");  // Changed from "" to "all"
-  const [month, setMonth] = useState<string>("all"); // Changed from "" to "all"
+  const [year, setYear] = useState<string>("all");
+  const [month, setMonth] = useState<string>("all");
 
   // Mock orders data - in a real app, this would come from an API
   const orders: Order[] = [
@@ -35,7 +36,8 @@ const OrderHistory = () => {
         { id: "1", name: "Fresh Tomatoes", quantity: 2, price: 40 },
         { id: "2", name: "Organic Onions", quantity: 1, price: 35 }
       ],
-      paymentMethod: "UPI"
+      paymentMethod: "UPI",
+      commissionFee: 10 // 2% of 500
     },
     // Add more mock orders as needed
   ];
@@ -112,6 +114,17 @@ const OrderHistory = () => {
                     <span>₹{item.price * item.quantity}</span>
                   </div>
                 ))}
+                
+                {/* Commission fee display */}
+                <div className="flex justify-between text-sm mt-2 text-gray-600">
+                  <span>{t("Commission Fee")} (2%)</span>
+                  <span>₹{order.commissionFee || Math.round(order.total * 0.02)}</span>
+                </div>
+                
+                <div className="flex justify-between font-semibold mt-2 pt-2 border-t">
+                  <span>{t("Final Total")}</span>
+                  <span>₹{order.total + (order.commissionFee || Math.round(order.total * 0.02))}</span>
+                </div>
               </div>
             </div>
           ))}

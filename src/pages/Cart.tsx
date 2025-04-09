@@ -144,10 +144,23 @@ const Cart = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex justify-between items-center mb-6">
-              <span className="text-lg font-semibold">{t("Total")}</span>
-              <span className="text-2xl font-bold text-green-700">₹{state.total}</span>
+            
+            {/* Updated order summary with commission fee */}
+            <div className="space-y-2 mb-6">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">{t("Subtotal")}</span>
+                <span className="font-medium">₹{state.total}</span>
+              </div>
+              <div className="flex justify-between items-center text-gray-600">
+                <span>{t("Commission Fee")} (2%)</span>
+                <span>₹{state.commissionFee}</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t">
+                <span className="text-lg font-semibold">{t("Total")}</span>
+                <span className="text-2xl font-bold text-green-700">₹{state.finalTotal}</span>
+              </div>
             </div>
+            
             <button
               onClick={handleCheckout}
               className="w-full bg-green-700 text-white px-6 py-4 rounded-lg hover:bg-green-800 transition-colors font-medium text-lg"

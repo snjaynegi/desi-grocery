@@ -57,14 +57,14 @@ const Profile = () => {
   return (
     <div className={`min-h-screen flex flex-col ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-gray-50'}`}>
       <Header />
-      <div className="flex-grow container mx-auto pt-16 px-4 pb-8">
+      <div className="profile-container flex-grow container mx-auto mt-20 px-4 pb-8">
         <h1 className={`text-2xl font-bold mb-6 md:pl-4 ${isDarkMode ? 'text-gray-100' : 'text-gray-900'}`}>
           {t("My Profile")}
         </h1>
 
         <SidebarProvider defaultOpen={true}>
           <div className="flex min-h-[70vh] w-full">
-            <Sidebar>
+            <Sidebar variant="inset">
               <SidebarContent className="mt-4">
                 <SidebarMenu>
                   {menuItems.map((item) => (
@@ -73,6 +73,7 @@ const Profile = () => {
                         isActive={activeTab === item.id}
                         onClick={() => setActiveTab(item.id)}
                         tooltip={item.name}
+                        className={isDarkMode ? 'text-gray-200 hover:text-white' : 'text-gray-800 hover:text-black'}
                       >
                         <item.icon className="w-5 h-5" />
                         <span>{item.name}</span>
@@ -82,7 +83,7 @@ const Profile = () => {
                 </SidebarMenu>
               </SidebarContent>
             </Sidebar>
-            <SidebarInset>
+            <SidebarInset className="ml-2 md:ml-4">
               <div className={`p-6 rounded-lg ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow animate-fadeIn`}>
                 {activeTab === "personal" && <PersonalInfo />}
                 {activeTab === "orders" && <OrderHistory />}

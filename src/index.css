@@ -144,12 +144,36 @@
 /* Profile page specific styles */
 .profile-container {
   padding-top: 1rem;
-  margin-top: 1rem;
+  margin-top: 3rem;
+  position: relative;
+  z-index: 10;
+}
+
+/* Fix for sidebar overlap with header */
+[data-sidebar="sidebar"] {
+  margin-top: 0;
+  top: 0;
+  z-index: 30;
+}
+
+/* Add spacing between sidebar and content */
+.sidebar-content-wrapper {
+  margin-left: 1rem;
+}
+
+/* Adjust sidebar position */
+[data-variant=inset] {
+  margin-top: 0 !important;
 }
 
 @media (max-width: 768px) {
   .profile-container {
     padding-top: 2rem;
+    margin-top: 1rem;
+  }
+  
+  [data-sidebar="sidebar"] {
+    z-index: 40;
   }
 }
 

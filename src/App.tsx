@@ -1,4 +1,5 @@
 
+import React, { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,7 +8,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
 import { WishlistProvider } from "./context/WishlistContext";
 import { ThemeProvider } from "./context/ThemeContext";
-import { Suspense } from "react";
 import "./i18n/config";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -23,74 +23,84 @@ import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import AdminLogin from "./pages/AdminLogin";
 
-const queryClient = new QueryClient();
+// Create a new QueryClient instance for the application
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <CartProvider>
-        <WishlistProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <Suspense fallback={<div>Loading...</div>}>
-              <BrowserRouter>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/signup" element={<Signup />} />
-                  <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route
-                    path="/cart"
-                    element={
-                      <PrivateRoute>
-                        <Cart />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/wishlist"
-                    element={
-                      <PrivateRoute>
-                        <Wishlist />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/orders"
-                    element={
-                      <PrivateRoute>
-                        <OrderHistory />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/grievance"
-                    element={
-                      <PrivateRoute>
-                        <Grievance />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/profile"
-                    element={
-                      <PrivateRoute>
-                        <Profile />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route path="/admin/login" element={<AdminLogin />} />
-                  <Route path="/admin" element={<Admin />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </BrowserRouter>
-            </Suspense>
-          </TooltipProvider>
-        </WishlistProvider>
-      </CartProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+  <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <Suspense fallback={<div>Loading...</div>}>
+                <BrowserRouter>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<Signup />} />
+                    <Route path="/product/:id" element={<ProductDetail />} />
+                    <Route
+                      path="/cart"
+                      element={
+                        <PrivateRoute>
+                          <Cart />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/wishlist"
+                      element={
+                        <PrivateRoute>
+                          <Wishlist />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/orders"
+                      element={
+                        <PrivateRoute>
+                          <OrderHistory />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/grievance"
+                      element={
+                        <PrivateRoute>
+                          <Grievance />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/profile"
+                      element={
+                        <PrivateRoute>
+                          <Profile />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route path="/admin/login" element={<AdminLogin />} />
+                    <Route path="/admin" element={<Admin />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              </Suspense>
+            </TooltipProvider>
+          </WishlistProvider>
+        </CartProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </React.StrictMode>
 );
 
 export default App;

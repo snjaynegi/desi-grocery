@@ -70,6 +70,16 @@ const ProductCard = ({ product }: ProductCardProps) => {
     
     return fallbackImages[product.category as keyof typeof fallbackImages] || "/placeholder.svg";
   };
+  
+  // Function to check if an image URL is valid
+  const isValidImageUrl = (url: string): boolean => {
+    return url && (
+      url.startsWith('https://images.unsplash.com/') || 
+      url.startsWith('http://') || 
+      url.startsWith('https://') || 
+      url.startsWith('/')
+    );
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 animate-slideUp">
@@ -82,14 +92,20 @@ const ProductCard = ({ product }: ProductCardProps) => {
             </div>
           ) : (
             <img
-              src={product.image}
+              src={isValidImageUrl(product.image) ? product.image : getFallbackImage()}
               alt={t(product.name)}
               className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-200"
               onError={(e) => {
                 setImageError(true);
-                // Try to load fallback image
+                // Try to load category-specific fallback image
                 const target = e.target as HTMLImageElement;
                 target.src = getFallbackImage();
+                
+                // If fallback fails, show placeholder
+                target.onerror = () => {
+                  target.onerror = null; // Prevent infinite loop
+                  target.src = "/placeholder.svg";
+                };
               }}
             />
           )}

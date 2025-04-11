@@ -243,6 +243,16 @@ const ProductDetail = () => {
                 src={product.image}
                 alt={t(product.name)}
                 className="w-full h-96 object-cover"
+                onError={(e) => {
+                  // Try to load fallback image based on category
+                  const target = e.target as HTMLImageElement;
+                  const fallbackImages = {
+                    vegetables: "https://images.unsplash.com/photo-1518977676601-b53f82aba655",
+                    fruits: "https://images.unsplash.com/photo-1560807707-8cc77767d783",
+                    staples: "https://images.unsplash.com/photo-1610725664285-7c57e6eeac3f"
+                  };
+                  target.src = fallbackImages[product.category as keyof typeof fallbackImages] || "/placeholder.svg";
+                }}
               />
             </div>
             <div className="p-8 md:w-1/2">

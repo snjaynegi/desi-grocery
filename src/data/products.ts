@@ -1084,15 +1084,46 @@ export const dummyProducts: Product[] = [
 ];
 
 const validateProducts = (products: Product[]): Product[] => {
-  return products.map(product => ({
-    ...product,
-    category: product.category || "other"
-  }));
+  return products.map(product => {
+    // Ensure image URL is properly formatted
+    let imageUrl = product.image;
+    
+    // Check if image URL needs to be fixed
+    if (imageUrl && !imageUrl.startsWith('http')) {
+      // If it's an Unsplash photo ID, add the complete URL
+      if (imageUrl.startsWith('photo-')) {
+        imageUrl = `https://images.unsplash.com/${imageUrl}`;
+      }
+      // If it's still not a valid URL, use a category-specific fallback
+      else if (!imageUrl.startsWith('/')) {
+        const fallbacks = {
+          vegetables: "https://images.unsplash.com/photo-1518977676601-b53f82aba655",
+          fruits: "https://images.unsplash.com/photo-1560807707-8cc77767d783",
+          staples: "https://images.unsplash.com/photo-1610725664285-7c57e6eeac3f"
+        };
+        imageUrl = fallbacks[product.category as keyof typeof fallbacks] || "/placeholder.svg";
+      }
+    }
+    
+    return {
+      ...product,
+      category: product.category || "other",
+      image: imageUrl
+    };
+  });
 };
 
 const generateExtendedProducts = (): Product[] => {
   const baseProducts = validateProducts([...dummyProducts]);
   const extendedProducts: Product[] = [...baseProducts];
+  
+  // Fix image URLs for base products
+  for (const product of extendedProducts) {
+    // Add proper Unsplash domain if missing
+    if (product.image && !product.image.startsWith('http')) {
+      product.image = `https://images.unsplash.com/${product.image}`;
+    }
+  }
   
   const variantsNeeded = 500 - baseProducts.length;
   const variantsPerProduct = Math.ceil(variantsNeeded / baseProducts.length);

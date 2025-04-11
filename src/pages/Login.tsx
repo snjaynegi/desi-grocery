@@ -60,12 +60,24 @@ const Login = () => {
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("currentUser", JSON.stringify(user));
 
+        // Reset form data
+        setFormData({
+          email: "",
+          password: "",
+        });
+        
         toast({
           title: t("Login Successful"),
           description: t("Welcome back!"),
         });
         navigate("/");
       } else {
+        // Reset password field on failed login
+        setFormData(prev => ({
+          ...prev,
+          password: "",
+        }));
+        
         toast({
           title: t("Login Failed"),
           description: t("Invalid email or password"),
@@ -94,7 +106,7 @@ const Login = () => {
               </Link>
             </p>
           </div>
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit} autoComplete="off">
             <div className="rounded-md shadow-sm -space-y-px">
               <div>
                 <label htmlFor="email" className="sr-only">
@@ -111,6 +123,7 @@ const Login = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
+                  autoComplete="off"
                 />
                 {errors.email && (
                   <p className="text-red-500 text-xs mt-1">{errors.email}</p>
@@ -131,6 +144,7 @@ const Login = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
                   }
+                  autoComplete="new-password"
                 />
                 {errors.password && (
                   <p className="text-red-500 text-xs mt-1">{errors.password}</p>

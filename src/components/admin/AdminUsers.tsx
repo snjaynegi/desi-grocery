@@ -30,7 +30,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, UserCheck, UserX, Trash2 } from "lucide-react";
+import { Search, UserCheck, UserX, Trash2, Key } from "lucide-react";
 
 // User interface
 interface User {
@@ -40,7 +40,26 @@ interface User {
   status: "active" | "inactive";
   registrationDate: string;
   avatar: string;
+  password?: string;
 }
+
+// Get registered users from localStorage or generate mock data
+const getUsers = (): User[] => {
+  const storedUsers = JSON.parse(localStorage.getItem("users") || "[]");
+  
+  // If there are stored users, enhance them with required properties
+  if (storedUsers.length > 0) {
+    return storedUsers.map((user: any) => ({
+      ...user,
+      status: user.status || "active",
+      registrationDate: user.registrationDate || new Date().toISOString().split('T')[0],
+      avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.name)}`
+    }));
+  }
+  
+  // Otherwise generate mock users
+  return generateMockUsers(15);
+};
 
 // Generate mock users data
 const generateMockUsers = (count: number): User[] => {
@@ -71,6 +90,7 @@ const generateMockUsers = (count: number): User[] => {
       name,
       email,
       status,
+      password: "password",
       registrationDate,
       avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`
     });
@@ -89,12 +109,13 @@ const AdminUsers = () => {
   // Dialog states
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+  const [isResetPasswordDialogOpen, setIsResetPasswordDialogOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [newStatus, setNewStatus] = useState<"active" | "inactive">("active");
 
-  // Initialize with mock users
+  // Initialize with registered users or mock users
   useEffect(() => {
-    setUsers(generateMockUsers(15));
+    setUsers(getUsers());
   }, []);
 
   // Filter users based on search and status

@@ -60,7 +60,7 @@ const Grievance = () => {
                 <SelectContent>
                   <SelectItem value="complaint">{t("Complaint")}</SelectItem>
                   <SelectItem value="suggestion">{t("Suggestion")}</SelectItem>
-                  <SelectItem value="issue">{t("Technical Issue")}</SelectItem>
+                  <SelectItem value="technical-issue">{t("Technical Issue")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

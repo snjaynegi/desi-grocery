@@ -50,7 +50,7 @@ const Index = () => {
               <SelectContent>
                 <SelectItem value="all">{t("All Categories")}</SelectItem>
                 {categories.map((category) => (
-                  <SelectItem key={category} value={category}>
+                  <SelectItem key={category} value={category || "unknown"}>
                     {t(category)}
                   </SelectItem>
                 ))}

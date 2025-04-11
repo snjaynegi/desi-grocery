@@ -533,8 +533,16 @@ export const dummyProducts: Product[] = [
   },
 ];
 
+// Make sure no product has an empty category string
+const validateProducts = (products: Product[]): Product[] => {
+  return products.map(product => ({
+    ...product,
+    category: product.category || "other"
+  }));
+};
+
 const generateExtendedProducts = (): Product[] => {
-  const baseProducts = [...dummyProducts];
+  const baseProducts = validateProducts([...dummyProducts]);
   const extendedProducts: Product[] = [...baseProducts];
   
   const variantsNeeded = 500 - baseProducts.length;

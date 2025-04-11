@@ -26,6 +26,17 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const [imageError, setImageError] = useState(false);
 
   const handleAddToCart = () => {
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    
+    if (!isLoggedIn) {
+      toast({
+        title: t("Please sign in"),
+        description: t("Sign in to add items to your cart"),
+        variant: "destructive",
+      });
+      return;
+    }
+    
     cartDispatch({
       type: "ADD_ITEM",
       payload: { ...product, quantity: 1 },
@@ -37,6 +48,17 @@ const ProductCard = ({ product }: ProductCardProps) => {
   };
 
   const handleToggleWishlist = () => {
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    
+    if (!isLoggedIn) {
+      toast({
+        title: t("Please sign in"),
+        description: t("Sign in to add items to your wishlist"),
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const isInWishlist = wishlistState.items.some(item => item.id === product.id);
     
     if (isInWishlist) {

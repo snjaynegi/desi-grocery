@@ -20,6 +20,8 @@ import PrivateRoute from "./components/PrivateRoute";
 import OrderHistory from "./pages/OrderHistory";
 import Grievance from "./pages/Grievance";
 import Profile from "./pages/Profile";
+import Admin from "./pages/Admin";
+import AdminLogin from "./pages/AdminLogin";
 
 const queryClient = new QueryClient();
 
@@ -78,6 +80,8 @@ const App = () => (
                       </PrivateRoute>
                     }
                   />
+                  <Route path="/admin/login" element={<AdminLogin />} />
+                  <Route path="/admin" element={<Admin />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>

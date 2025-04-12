@@ -26,3 +26,13 @@ This project is built with .
 - React
 - shadcn-ui
 - Tailwind CSS
+
+Credentails Information:
+
+Main application:-
+Username: demo 
+Password: demo123
+
+Admin:-
+After a successful password reset, the password is reverted to its default value, which is 'password'.
+  

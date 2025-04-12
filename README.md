@@ -34,5 +34,8 @@ Username: demo
 Password: demo123
 
 Admin:-
+Username - admin
+Password - admin123
+Note-
 After a successful password reset, the password is reverted to its default value, which is 'password'.
   

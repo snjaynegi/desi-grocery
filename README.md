@@ -27,7 +27,7 @@ This project is built with .
 - shadcn-ui
 - Tailwind CSS
 -----------------------------------------
-Credentails Information:
+## Credentails Information
 
 Main application:-
 - Username: demo@gmail.com

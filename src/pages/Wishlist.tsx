@@ -1,11 +1,12 @@
 
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
 import { toast } from "@/components/ui/use-toast";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import { ShoppingCart, Trash2 } from "lucide-react";
+import { ShoppingCart, Trash2, Home } from "lucide-react";
 
 const Wishlist = () => {
   const { t } = useTranslation();
@@ -38,7 +39,16 @@ const Wishlist = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
       <main className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-8">{t("My Wishlist")}</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">{t("My Wishlist")}</h1>
+          <Link 
+            to="/" 
+            className="flex items-center text-primary hover:text-primary/90 transition-colors"
+          >
+            <Home className="mr-1" size={20} />
+            {t("Home")}
+          </Link>
+        </div>
         {wishlistState.items.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-600">{t("Your wishlist is empty")}</p>

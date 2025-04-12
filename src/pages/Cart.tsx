@@ -6,6 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { Home } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -74,7 +75,16 @@ const Cart = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header />
       <div className="flex-grow container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-8">{t("Cart")}</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">{t("Cart")}</h1>
+          <Link 
+            to="/" 
+            className="flex items-center text-primary hover:text-primary/90 transition-colors"
+          >
+            <Home className="mr-1" size={20} />
+            {t("Home")}
+          </Link>
+        </div>
         <div className="bg-white rounded-lg shadow">
           <div className="p-6 space-y-4">
             {state.items.map((item) => (

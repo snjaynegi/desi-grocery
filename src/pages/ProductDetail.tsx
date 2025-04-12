@@ -4,7 +4,7 @@ import { useCart } from "../context/CartContext";
 import { toast } from "@/components/ui/use-toast";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import NutritionChart from "../components/NutritionChart";
+import CompactNutritionChart from "../components/CompactNutritionChart";
 import { dummyProducts } from "../data/products";
 import { generateNutritionData } from "../utils/nutritionGenerator";
 
@@ -285,9 +285,9 @@ const ProductDetail = () => {
                 </p>
               </div>
 
-              {/* Nutrition Chart */}
-              <div className="mt-6">
-                <NutritionChart 
+              {/* Compact Nutrition Chart */}
+              <div className="mt-4">
+                <CompactNutritionChart 
                   nutrition={product.nutritionalInfo ? generateNutritionData({
                     ...product,
                     category: product.category
@@ -300,7 +300,7 @@ const ProductDetail = () => {
               </div>
               <button
                 onClick={handleAddToCart}
-                className="mt-8 w-full bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors"
+                className="mt-4 w-full bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors"
               >
                 {t("Add to Cart")}
               </button>

@@ -48,6 +48,36 @@ const Login = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
+      // Check for demo user
+      if (formData.email === "demo" && formData.password === "demo123") {
+        // Create demo user if it doesn't exist
+        const demoUser = {
+          id: "demo-user",
+          name: "Demo User",
+          email: "demo",
+          status: "active",
+          registrationDate: new Date().toISOString().split('T')[0],
+          avatar: `https://api.dicebear.com/7.x/initials/svg?seed=Demo User`
+        };
+        
+        // Store login status and user information
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("currentUser", JSON.stringify(demoUser));
+
+        // Reset form data
+        setFormData({
+          email: "",
+          password: "",
+        });
+        
+        toast({
+          title: t("Login Successful"),
+          description: t("Welcome to demo account!"),
+        });
+        navigate("/");
+        return;
+      }
+      
       // Get registered users from localStorage
       const users = JSON.parse(localStorage.getItem("users") || "[]");
       const user = users.find(

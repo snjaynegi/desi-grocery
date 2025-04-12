@@ -38,9 +38,9 @@ const Admin = () => {
           <h1 className="text-xl font-bold">{t("Admin Dashboard")}</h1>
           <button
             onClick={handleLogout}
-            className="px-3 py-1 text-sm bg-primary text-white hover:bg-primary/90 rounded"
+            className="px-3 py-1 text-sm bg-primary text-white hover:bg-primary/90 rounded flex items-center gap-2"
           >
-            {t("Logout")}
+            <span className="font-medium">{t("Logout")}</span>
           </button>
         </div>
       </div>

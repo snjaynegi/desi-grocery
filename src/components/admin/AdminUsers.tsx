@@ -30,7 +30,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, UserCheck, UserX, Trash2, Key } from "lucide-react";
+import { Search, UserCheck, UserX, Trash2, KeyRound } from "lucide-react";
 
 // User interface
 interface User {
@@ -112,6 +112,31 @@ const AdminUsers = () => {
   const [isResetPasswordDialogOpen, setIsResetPasswordDialogOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [newStatus, setNewStatus] = useState<"active" | "inactive">("active");
+  
+  // Reset password handler
+  const handleResetPassword = () => {
+    if (!currentUser) return;
+    
+    setUsers(prev => prev.map(user => 
+      user.id === currentUser.id ? { ...user, password: "password" } : user
+    ));
+    
+    // Update users in localStorage if needed
+    const storedUsers = JSON.parse(localStorage.getItem("users") || "[]");
+    if (storedUsers.length > 0) {
+      const updatedUsers = storedUsers.map((user: any) => 
+        user.id === currentUser.id ? { ...user, password: "password" } : user
+      );
+      localStorage.setItem("users", JSON.stringify(updatedUsers));
+    }
+    
+    setIsResetPasswordDialogOpen(false);
+    
+    toast({
+      title: t("Password Reset"),
+      description: t("User password has been reset to default")
+    });
+  };
 
   // Initialize with registered users or mock users
   useEffect(() => {
@@ -237,11 +262,22 @@ const AdminUsers = () => {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="text-blue-600"
+                          onClick={() => {
+                            setCurrentUser(user);
+                            setIsResetPasswordDialogOpen(true);
+                          }}
+                        >
+                          <KeyRound size={16} />
+                        </Button>
                         {user.status === "inactive" ? (
                           <Button 
                             variant="ghost" 
                             size="sm"
-                            className="text-green-600"
+                            className="text-green-600 hover:bg-green-50"
                             onClick={() => {
                               setCurrentUser(user);
                               setNewStatus("active");
@@ -254,7 +290,7 @@ const AdminUsers = () => {
                           <Button 
                             variant="ghost" 
                             size="sm"
-                            className="text-amber-600"
+                            className="text-amber-600 hover:bg-amber-50"
                             onClick={() => {
                               setCurrentUser(user);
                               setNewStatus("inactive");
@@ -267,7 +303,7 @@ const AdminUsers = () => {
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          className="text-red-600"
+                          className="text-red-600 hover:bg-red-50"
                           onClick={() => {
                             setCurrentUser(user);
                             setIsDeleteDialogOpen(true);
@@ -295,7 +331,7 @@ const AdminUsers = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
+            <AlertDialogCancel className="bg-white text-gray-700 border-gray-300">{t("Cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteUser} className="bg-red-600 hover:bg-red-700">
               {t("Delete")}
             </AlertDialogAction>
@@ -317,9 +353,27 @@ const AdminUsers = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t("Cancel")}</AlertDialogCancel>
+            <AlertDialogCancel className="bg-white text-gray-700 border-gray-300">{t("Cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleUpdateStatus}>
               {newStatus === "active" ? t("Activate") : t("Deactivate")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* Reset Password Confirmation Dialog */}
+      <AlertDialog open={isResetPasswordDialogOpen} onOpenChange={setIsResetPasswordDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("Reset Password")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("Are you sure you want to reset this user's password to the default password? The user will need to change it on their next login.")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-white text-gray-700 border-gray-300">{t("Cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleResetPassword} className="bg-blue-600 hover:bg-blue-700">
+              {t("Reset Password")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

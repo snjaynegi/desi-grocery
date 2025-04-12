@@ -1,3 +1,5 @@
+import { NutritionData } from "../components/NutritionChart";
+
 export interface Product {
   id: string;
   name: string;
@@ -8,6 +10,7 @@ export interface Product {
   description?: string;
   origin?: string;
   inStock?: boolean;
+  nutrition?: NutritionData;
 }
 
 const getFallbackImage = (category: string) => {
@@ -1083,6 +1086,8 @@ export const dummyProducts: Product[] = [
   }
 ];
 
+import { enrichProductsWithNutrition } from '../utils/nutritionGenerator';
+
 const validateProducts = (products: Product[]): Product[] => {
   return products.map(product => {
     // Ensure image URL is properly formatted
@@ -1114,7 +1119,8 @@ const validateProducts = (products: Product[]): Product[] => {
 };
 
 const generateExtendedProducts = (): Product[] => {
-  const baseProducts = validateProducts([...dummyProducts]);
+  // Add nutrition data to base products
+  const baseProducts = enrichProductsWithNutrition(validateProducts([...dummyProducts]));
   const extendedProducts: Product[] = [...baseProducts];
   
   // Fix image URLs for base products

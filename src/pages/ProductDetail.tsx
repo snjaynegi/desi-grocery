@@ -4,6 +4,9 @@ import { useCart } from "../context/CartContext";
 import { toast } from "@/components/ui/use-toast";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import NutritionChart from "../components/NutritionChart";
+import { dummyProducts } from "../data/products";
+import { generateNutritionData } from "../utils/nutritionGenerator";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -280,12 +283,20 @@ const ProductDetail = () => {
                   <span className="font-semibold">{t("Description")}:</span>{" "}
                   {product.description}
                 </p>
-                <p className="text-gray-600">
-                  <span className="font-semibold">
-                    {t("Nutritional Information")}:
-                  </span>{" "}
-                  {product.nutritionalInfo}
-                </p>
+              </div>
+
+              {/* Nutrition Chart */}
+              <div className="mt-6">
+                <NutritionChart 
+                  nutrition={product.nutritionalInfo ? generateNutritionData({
+                    ...product,
+                    category: product.category
+                  }) : generateNutritionData({
+                    ...product,
+                    category: product.category
+                  })}
+                  category={product.category}
+                />
               </div>
               <button
                 onClick={handleAddToCart}

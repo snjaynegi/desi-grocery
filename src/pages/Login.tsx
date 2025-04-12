@@ -5,6 +5,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 const Login = () => {
   const { t } = useTranslation();
@@ -17,6 +26,10 @@ const Login = () => {
     email: "",
     password: "",
   });
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetEmailError, setResetEmailError] = useState("");
+  const [resetInProgress, setResetInProgress] = useState(false);
 
   const validateForm = () => {
     let isValid = true;
@@ -43,6 +56,75 @@ const Login = () => {
 
     setErrors(newErrors);
     return isValid;
+  };
+
+  const validateResetEmail = (email: string) => {
+    // Check if email is empty
+    if (!email.trim()) {
+      setResetEmailError(t("Email is required"));
+      return false;
+    }
+    
+    // Check for whitespaces within email
+    if (/\s/.test(email)) {
+      setResetEmailError(t("Email cannot contain whitespaces"));
+      return false;
+    }
+    
+    // Check if email contains only special characters
+    if (/^[^a-zA-Z0-9]+$/.test(email)) {
+      setResetEmailError(t("Email cannot contain only special characters"));
+      return false;
+    }
+    
+    // Check for proper email format with comprehensive validation
+    // Must have @ with text before and after, and a domain with at least one dot
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setResetEmailError(t("Invalid email format"));
+      return false;
+    }
+    
+    setResetEmailError("");
+    return true;
+  };
+
+  const handleForgotPassword = () => {
+    if (!validateResetEmail(resetEmail)) {
+      return;
+    }
+    
+    setResetInProgress(true);
+    
+    // Get users from localStorage
+    const users = JSON.parse(localStorage.getItem("users") || "[]");
+    const userExists = users.some((u: any) => u.email === resetEmail);
+    
+    if (userExists) {
+      // Update the user's password to "password"
+      const updatedUsers = users.map((u: any) => {
+        if (u.email === resetEmail) {
+          return { ...u, password: "password" };
+        }
+        return u;
+      });
+      
+      // Update localStorage
+      localStorage.setItem("users", JSON.stringify(updatedUsers));
+      
+      toast({
+        title: t("Password Reset Successful"),
+        description: t("Your password has been reset to 'password'"),
+      });
+      
+      // Close dialog and reset state
+      setForgotPasswordOpen(false);
+      setResetEmail("");
+    } else {
+      // If the email doesn't exist in our system
+      setResetEmailError(t("No account found with this email"));
+    }
+    
+    setResetInProgress(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -190,9 +272,73 @@ const Login = () => {
                 {t("Sign in")}
               </button>
             </div>
+            
+            <div className="text-center mt-4">
+              <button
+                type="button"
+                onClick={() => setForgotPasswordOpen(true)}
+                className="text-sm text-primary hover:text-primary/80 dark:text-green-400 dark:hover:text-green-300"
+              >
+                {t("Forgot your password?")}
+              </button>
+            </div>
           </form>
         </div>
       </div>
+      
+      {/* Forgot Password Dialog */}
+      <Dialog open={forgotPasswordOpen} onOpenChange={setForgotPasswordOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("Reset Password")}</DialogTitle>
+            <DialogDescription>
+              {t("Enter your email address to reset your password")}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label htmlFor="reset-email" className="text-sm font-medium">
+                {t("Email")}
+              </label>
+              <input
+                id="reset-email"
+                type="email"
+                value={resetEmail}
+                onChange={(e) => setResetEmail(e.target.value)}
+                onBlur={() => validateResetEmail(resetEmail)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                placeholder={t("Email address")}
+              />
+              {resetEmailError && (
+                <p className="text-red-500 text-xs mt-1">{resetEmailError}</p>
+              )}
+            </div>
+          </div>
+          
+          <DialogFooter className="flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+            <Button
+              type="button" 
+              variant="outline"
+              onClick={() => {
+                setForgotPasswordOpen(false);
+                setResetEmail("");
+                setResetEmailError("");
+              }}
+            >
+              {t("Cancel")}
+            </Button>
+            <Button
+              type="button"
+              onClick={handleForgotPassword}
+              disabled={resetInProgress || !resetEmail}
+            >
+              {resetInProgress ? t("Resetting...") : t("Reset Password")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
       <Footer />
     </div>
   );

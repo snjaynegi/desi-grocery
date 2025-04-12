@@ -55,5 +55,16 @@
   "Continue Shopping": "खरीदारी जारी रखें",
   "Remove": "हटाएं",
   "Proceed to Checkout": "चेकआउट करें",
-  "Email address": "ईमेल पता"
+  "Email address": "ईमेल पता",
+  "Forgot your password?": "पासवर्ड भूल गए?",
+  "Reset Password": "पासवर्ड रीसेट करें",
+  "Enter your email address to reset your password": "अपना पासवर्ड रीसेट करने के लिए अपना ईमेल पता दर्ज करें",
+  "Reset": "रीसेट",
+  "Cancel": "रद्द करें",
+  "Email cannot contain whitespaces": "ईमेल में खाली स्थान नहीं हो सकते",
+  "Email cannot contain only special characters": "ईमेल में केवल विशेष वर्ण नहीं हो सकते",
+  "No account found with this email": "इस ईमेल से कोई खाता नहीं मिला",
+  "Password Reset Successful": "पासवर्ड रीसेट सफल",
+  "Your password has been reset to 'password'": "आपका पासवर्ड 'password' पर रीसेट कर दिया गया है",
+  "Resetting...": "रीसेट कर रहा है..."
 }

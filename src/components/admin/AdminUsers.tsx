@@ -182,6 +182,24 @@ const AdminUsers = () => {
       user.id === currentUser.id ? { ...user, status: newStatus } : user
     ));
     
+    // Update users in localStorage
+    const storedUsers = JSON.parse(localStorage.getItem("users") || "[]");
+    if (storedUsers.length > 0) {
+      const updatedUsers = storedUsers.map((user: any) => 
+        user.id === currentUser.id ? { ...user, status: newStatus } : user
+      );
+      localStorage.setItem("users", JSON.stringify(updatedUsers));
+      
+      // If user is deactivated, check if they are currently logged in and log them out
+      if (newStatus === "inactive") {
+        const currentLoggedInUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+        if (currentLoggedInUser.id === currentUser.id) {
+          localStorage.removeItem("isLoggedIn");
+          localStorage.removeItem("currentUser");
+        }
+      }
+    }
+    
     setIsStatusDialogOpen(false);
     
     toast({
@@ -331,7 +349,7 @@ const AdminUsers = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white text-gray-700 border-gray-300">{t("Cancel")}</AlertDialogCancel>
+            <AlertDialogCancel className="bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200">{t("Cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteUser} className="bg-red-600 hover:bg-red-700">
               {t("Delete")}
             </AlertDialogAction>

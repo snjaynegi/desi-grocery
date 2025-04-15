@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
@@ -253,7 +252,7 @@ const Security = () => {
         .from('profiles')
         .update({ 
           username: formData.newUsername,
-          updated_at: new Date()
+          updated_at: new Date().toISOString()
         })
         .eq('id', user?.id);
       

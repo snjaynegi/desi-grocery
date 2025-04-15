@@ -1,5 +1,5 @@
 
-import React, { Suspense } from "react";
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -33,8 +33,8 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
-  <React.StrictMode>
+const App = () => {
+  return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <CartProvider>
@@ -42,7 +42,7 @@ const App = () => (
             <TooltipProvider>
               <Toaster />
               <Sonner />
-              <Suspense fallback={<div>Loading...</div>}>
+              <React.Suspense fallback={<div>Loading...</div>}>
                 <BrowserRouter>
                   <Routes>
                     <Route path="/" element={<Index />} />
@@ -94,13 +94,13 @@ const App = () => (
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </BrowserRouter>
-              </Suspense>
+              </React.Suspense>
             </TooltipProvider>
           </WishlistProvider>
         </CartProvider>
       </ThemeProvider>
     </QueryClientProvider>
-  </React.StrictMode>
-);
+  );
+};
 
 export default App;

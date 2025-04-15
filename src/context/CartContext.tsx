@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 
 interface CartItem {
   id: string;
@@ -12,19 +12,21 @@ interface CartItem {
 interface CartState {
   items: CartItem[];
   total: number;
-  commissionFee: number; // Added commission fee
-  finalTotal: number; // Added final total (including commission)
+  commissionFee: number;
+  finalTotal: number;
 }
 
 type CartAction =
   | { type: 'ADD_ITEM'; payload: CartItem }
   | { type: 'REMOVE_ITEM'; payload: string }
   | { type: 'UPDATE_QUANTITY'; payload: { id: string; quantity: number } }
-  | { type: 'CLEAR_CART' };
+  | { type: 'CLEAR_CART' }
+  | { type: 'RESTORE_CART'; payload: CartState };
 
 const CartContext = createContext<{
   state: CartState;
   dispatch: React.Dispatch<CartAction>;
+  restoreCartFromLocalStorage: () => void;
 } | null>(null);
 
 // Helper function to calculate commission and final total
@@ -38,6 +40,9 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
   let newState;
   
   switch (action.type) {
+    case 'RESTORE_CART':
+      return action.payload;
+    
     case 'ADD_ITEM': {
       const existingItem = state.items.find(item => item.id === action.payload.id);
       let newTotal;
@@ -131,13 +136,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     finalTotal: 0
   });
 
-  useEffect(() => {
+  const restoreCartFromLocalStorage = useCallback(() => {
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
-      const parsedCart = JSON.parse(savedCart);
-      parsedCart.items.forEach((item: CartItem) => {
-        dispatch({ type: 'ADD_ITEM', payload: item });
-      });
+      try {
+        const parsedCart = JSON.parse(savedCart);
+        dispatch({ type: 'RESTORE_CART', payload: parsedCart });
+      } catch (error) {
+        console.error('Failed to restore cart from localStorage:', error);
+      }
     }
   }, []);
 
@@ -146,7 +153,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [state]);
 
   return (
-    <CartContext.Provider value={{ state, dispatch }}>
+    <CartContext.Provider value={{ state, dispatch, restoreCartFromLocalStorage }}>
       {children}
     </CartContext.Provider>
   );

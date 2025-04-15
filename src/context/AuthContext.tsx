@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { useCart } from './CartContext';
 
 type AuthContextType = {
   user: User | null;
@@ -26,9 +27,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { restoreCartFromLocalStorage } = useCart();
+
+  const logUserSession = async (eventType: 'login' | 'logout') => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_sessions')
+        .insert({
+          user_id: user.id,
+          event_type: eventType,
+          ip_address: null, // In a real app, you'd capture the user's IP
+          user_agent: window.navigator.userAgent
+        });
+
+      if (error) console.error('Error logging session:', error);
+    } catch (err) {
+      console.error('Session logging failed:', err);
+    }
+  };
 
   useEffect(() => {
-    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
         console.log("Auth state changed:", event);
@@ -36,17 +56,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(currentSession?.user ?? null);
 
         if (event === 'SIGNED_IN') {
-          // Handle sign in event (e.g., redirect or fetch user data)
-          console.log('User signed in');
+          logUserSession('login');
+          restoreCartFromLocalStorage();
+          navigate('/');
         } else if (event === 'SIGNED_OUT') {
-          // Handle sign out event
-          console.log('User signed out');
+          logUserSession('logout');
           navigate('/login');
         }
       }
     );
 
-    // Check for existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       console.log("Existing session:", currentSession);
       setSession(currentSession);
@@ -57,7 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, restoreCartFromLocalStorage]);
 
   const signIn = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({

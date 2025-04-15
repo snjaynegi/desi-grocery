@@ -33,6 +33,80 @@ export type Database = {
         }
         Relationships: []
       }
+      transaction_items: {
+        Row: {
+          created_at: string | null
+          id: string
+          image: string | null
+          price: number
+          product_id: string
+          product_name: string
+          quantity: number
+          transaction_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          image?: string | null
+          price: number
+          product_id: string
+          product_name: string
+          quantity: number
+          transaction_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          image?: string | null
+          price?: number
+          product_id?: string
+          product_name?: string
+          quantity?: number
+          transaction_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_items_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transactions: {
+        Row: {
+          commission_fee: number
+          created_at: string | null
+          final_amount: number
+          id: string
+          payment_method: string
+          status: string
+          total_amount: number
+          user_id: string
+        }
+        Insert: {
+          commission_fee: number
+          created_at?: string | null
+          final_amount: number
+          id?: string
+          payment_method: string
+          status?: string
+          total_amount: number
+          user_id: string
+        }
+        Update: {
+          commission_fee?: number
+          created_at?: string | null
+          final_amount?: number
+          id?: string
+          payment_method?: string
+          status?: string
+          total_amount?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

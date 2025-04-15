@@ -1,7 +1,10 @@
 
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Download } from "lucide-react";
+import { Download, Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface OrderItem {
   id: string;
@@ -16,26 +19,70 @@ interface Order {
   items: OrderItem[];
   total: number;
   status: string;
-  commissionFee?: number;
+  commissionFee: number;
+  finalTotal: number;
+  paymentMethod: string;
 }
 
 const OrderHistory = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // In a real app, this would come from an API
-  const orders: Order[] = [
-    {
-      id: "ORD-123",
-      date: "2024-03-25",
-      items: [
-        { id: "1", name: "Fresh Tomatoes", quantity: 2, price: 40 },
-        { id: "2", name: "Organic Onions", quantity: 1, price: 35 }
-      ],
-      total: 115,
-      status: "Delivered",
-      commissionFee: 2 // 2% of 115, rounded to nearest integer
-    }
-  ];
+  useEffect(() => {
+    const fetchOrders = async () => {
+      if (!user) return;
+      
+      try {
+        // Fetch all transactions for the current user
+        const { data: transactions, error: transactionError } = await supabase
+          .from('transactions')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
+        if (transactionError) throw transactionError;
+        
+        // For each transaction, fetch its items
+        const ordersWithItems = await Promise.all(
+          transactions.map(async (transaction) => {
+            const { data: items, error: itemsError } = await supabase
+              .from('transaction_items')
+              .select('*')
+              .eq('transaction_id', transaction.id);
+              
+            if (itemsError) throw itemsError;
+            
+            return {
+              id: transaction.id,
+              date: transaction.created_at,
+              total: transaction.total_amount,
+              status: transaction.status,
+              commissionFee: transaction.commission_fee,
+              finalTotal: transaction.final_amount,
+              paymentMethod: transaction.payment_method,
+              items: items.map(item => ({
+                id: item.product_id,
+                name: item.product_name,
+                quantity: item.quantity,
+                price: item.price
+              }))
+            };
+          })
+        );
+        
+        setOrders(ordersWithItems);
+      } catch (err) {
+        console.error('Error fetching orders:', err);
+        setError(t("Failed to load orders"));
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchOrders();
+  }, [user, t]);
 
   const handleDownloadInvoice = (orderId: string) => {
     // In a real app, this would trigger a PDF download
@@ -53,15 +100,21 @@ const OrderHistory = () => {
     });
   };
 
-  // Calculate commission fee if not provided
-  const getCommissionFee = (order: Order) => {
-    return order.commissionFee || Math.round(order.total * 0.02);
-  };
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
-  // Calculate final total
-  const getFinalTotal = (order: Order) => {
-    return order.total + getCommissionFee(order);
-  };
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-500">{error}</p>
+      </div>
+    );
+  }
 
   if (orders.length === 0) {
     return (
@@ -80,7 +133,7 @@ const OrderHistory = () => {
             <div className="flex justify-between items-start mb-4">
               <div>
                 <p className="font-medium">
-                  {t("Order")} #{order.id}
+                  {t("Order")} #{order.id.substring(0, 8)}
                 </p>
                 <p className="text-sm text-gray-600">
                   {new Date(order.date).toLocaleDateString()}
@@ -88,14 +141,17 @@ const OrderHistory = () => {
                 <p className="text-sm mt-1 inline-block px-2 py-0.5 bg-green-100 text-green-800 rounded-full">
                   {order.status}
                 </p>
+                <p className="text-sm text-gray-600 mt-1">
+                  {t("Payment")}: {order.paymentMethod}
+                </p>
               </div>
-              <p className="text-lg font-semibold">₹{getFinalTotal(order)}</p>
+              <p className="text-lg font-semibold">₹{order.finalTotal}</p>
             </div>
             <div className="space-y-2">
               {order.items.map((item) => (
                 <div key={item.id} className="flex justify-between text-sm">
                   <span>
-                    {item.name} × {item.quantity}
+                    {t(item.name)} × {item.quantity}
                   </span>
                   <span>₹{item.price * item.quantity}</span>
                 </div>
@@ -104,13 +160,13 @@ const OrderHistory = () => {
               {/* Commission fee line */}
               <div className="flex justify-between text-sm text-gray-600">
                 <span>{t("Commission Fee")} (2%)</span>
-                <span>₹{getCommissionFee(order)}</span>
+                <span>₹{order.commissionFee}</span>
               </div>
               
               {/* Total line */}
               <div className="flex justify-between font-medium pt-2 border-t">
                 <span>{t("Total")}</span>
-                <span>₹{getFinalTotal(order)}</span>
+                <span>₹{order.finalTotal}</span>
               </div>
             </div>
             <div className="mt-4 flex gap-4">

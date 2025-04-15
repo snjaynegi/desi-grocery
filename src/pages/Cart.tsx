@@ -6,7 +6,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-import { Home } from "lucide-react";
+import { Home, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "../context/AuthContext";
 import {
   Select,
   SelectContent,
@@ -20,6 +22,8 @@ const Cart = () => {
   const { state, dispatch } = useCart();
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { user } = useAuth();
 
   const handleUpdateQuantity = (id: string, quantity: number) => {
     if (quantity < 1) {
@@ -29,7 +33,63 @@ const Cart = () => {
     }
   };
 
-  const handleCheckout = () => {
+  const saveTransaction = async () => {
+    if (!user) {
+      toast({
+        title: t("Authentication required"),
+        description: t("Please sign in to complete your purchase"),
+        variant: "destructive",
+      });
+      navigate("/login");
+      return false;
+    }
+
+    try {
+      // Insert transaction record
+      const { data: transactionData, error: transactionError } = await supabase
+        .from("transactions")
+        .insert({
+          user_id: user.id,
+          total_amount: state.total,
+          commission_fee: state.commissionFee,
+          final_amount: state.finalTotal,
+          payment_method: paymentMethod,
+        })
+        .select("id")
+        .single();
+
+      if (transactionError) {
+        console.error("Transaction error:", transactionError);
+        return false;
+      }
+
+      // Insert transaction items
+      const transactionItemsData = state.items.map(item => ({
+        transaction_id: transactionData.id,
+        product_id: item.id,
+        product_name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.image
+      }));
+
+      const { error: itemsError } = await supabase
+        .from("transaction_items")
+        .insert(transactionItemsData);
+
+      if (itemsError) {
+        console.error("Transaction items error:", itemsError);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error saving transaction:", error);
+      return false;
+    }
+  };
+
+  const handleCheckout = async () => {
     if (!paymentMethod) {
       toast({
         title: t("Select payment method"),
@@ -39,15 +99,30 @@ const Cart = () => {
       return;
     }
 
-    // In a real app, this would process the payment
-    toast({
-      title: t("Order placed successfully"),
-      description: t("Thank you for your purchase!"),
-    });
+    setIsProcessing(true);
 
-    // Clear cart and redirect to orders
-    dispatch({ type: "CLEAR_CART" });
-    navigate("/orders");
+    // Save transaction to database
+    const success = await saveTransaction();
+    
+    if (success) {
+      // Show success message
+      toast({
+        title: t("Order placed successfully"),
+        description: t("Thank you for your purchase!"),
+      });
+
+      // Clear cart and redirect to orders
+      dispatch({ type: "CLEAR_CART" });
+      navigate("/orders");
+    } else {
+      toast({
+        title: t("Checkout failed"),
+        description: t("There was an error processing your order. Please try again."),
+        variant: "destructive",
+      });
+    }
+    
+    setIsProcessing(false);
   };
 
   if (state.items.length === 0) {
@@ -155,7 +230,6 @@ const Cart = () => {
               </Select>
             </div>
             
-            {/* Updated order summary with commission fee */}
             <div className="space-y-2 mb-6">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">{t("Subtotal")}</span>
@@ -173,9 +247,17 @@ const Cart = () => {
             
             <button
               onClick={handleCheckout}
-              className="w-full bg-green-700 text-white px-6 py-4 rounded-lg hover:bg-green-800 transition-colors font-medium text-lg"
+              disabled={isProcessing}
+              className="w-full bg-green-700 text-white px-6 py-4 rounded-lg hover:bg-green-800 transition-colors font-medium text-lg disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              {t("Proceed to Checkout")}
+              {isProcessing ? (
+                <div className="flex items-center justify-center">
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  {t("Processing...")}
+                </div>
+              ) : (
+                t("Proceed to Checkout")
+              )}
             </button>
           </div>
         </div>

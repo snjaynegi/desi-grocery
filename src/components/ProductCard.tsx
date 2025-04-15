@@ -1,11 +1,11 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
-import { Heart, ImageOff } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Heart, ImageOff, RotateCcw } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
 
 interface Product {
   id: string;
@@ -21,9 +21,51 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { dispatch: cartDispatch } = useCart();
   const { state: wishlistState, dispatch: wishlistDispatch } = useWishlist();
   const [imageError, setImageError] = useState(false);
+  const supabase = useSupabaseClient();
+  
+  useEffect(() => {
+    const recordProductView = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('viewedProducts')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (userError && userError.code !== 'PGRST116') {
+            console.error('Error fetching user viewed products:', userError);
+            return;
+          }
+          
+          const viewedProducts = userData?.viewedProducts || [];
+          
+          const filteredProducts = viewedProducts.filter(id => id !== product.id);
+          
+          const updatedViewedProducts = [product.id, ...filteredProducts].slice(0, 20);
+          
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({ viewedProducts: updatedViewedProducts })
+            .eq('id', session.user.id);
+            
+          if (updateError) {
+            console.error('Error updating viewed products:', updateError);
+          }
+        }
+      } catch (error) {
+        console.error('Error recording product view:', error);
+      }
+    };
+    
+    recordProductView();
+  }, [product.id, supabase]);
 
   const handleAddToCart = () => {
     const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
@@ -82,7 +124,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
     }
   };
 
-  // Get fallback image based on category
   const getFallbackImage = () => {
     const fallbackImages = {
       vegetables: "https://images.unsplash.com/photo-1518977676601-b53f82aba655",
@@ -93,7 +134,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
     return fallbackImages[product.category as keyof typeof fallbackImages] || "/placeholder.svg";
   };
   
-  // Function to check if an image URL is valid
   const isValidImageUrl = (url: string): boolean => {
     return url && (
       url.startsWith('https://images.unsplash.com/') || 
@@ -103,10 +143,48 @@ const ProductCard = ({ product }: ProductCardProps) => {
     );
   };
 
+  const handleQuickReorder = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user) {
+        return;
+      }
+      
+      const { data: userData } = await supabase
+        .from('users')
+        .select('purchaseHistory')
+        .eq('id', session.user.id)
+        .single();
+        
+      if (!userData?.purchaseHistory?.length) {
+        return;
+      }
+      
+      const hasOrderedBefore = userData.purchaseHistory.some(
+        order => order.products.some(p => p.productId === product.id)
+      );
+      
+      if (hasOrderedBefore) {
+        cartDispatch({
+          type: "ADD_ITEM",
+          payload: { ...product, quantity: 1 },
+        });
+        
+        toast({
+          title: t("Re-ordered!"),
+          description: t("Item added to cart from your previous orders"),
+        });
+      }
+    } catch (error) {
+      console.error('Error with quick reorder:', error);
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200 animate-slideUp">
       <Link to={`/product/${product.id}`} className="block">
-        <div className="aspect-square overflow-hidden bg-gray-100">
+        <div className="aspect-square overflow-hidden bg-gray-100 relative">
           {imageError ? (
             <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-gray-100 text-gray-400">
               <ImageOff className="w-8 h-8 mb-2" />
@@ -119,13 +197,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
               className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-200"
               onError={(e) => {
                 setImageError(true);
-                // Try to load category-specific fallback image
                 const target = e.target as HTMLImageElement;
                 target.src = getFallbackImage();
                 
-                // If fallback fails, show placeholder
                 target.onerror = () => {
-                  target.onerror = null; // Prevent infinite loop
+                  target.onerror = null;
                   target.src = "/placeholder.svg";
                 };
               }}
@@ -138,18 +214,28 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <div className="inline-block px-2 py-1 text-xs font-medium text-primary bg-primary/10 rounded-full">
             {t(product.category)}
           </div>
-          <button
-            onClick={handleToggleWishlist}
-            className="text-gray-400 hover:text-red-500 transition-colors duration-300"
-          >
-            <Heart
-              className={`w-5 h-5 transition-all duration-300 ${
-                wishlistState.items.some(item => item.id === product.id)
-                  ? "fill-red-500 text-red-500 scale-110"
-                  : ""
-              }`}
-            />
-          </button>
+          <div className="flex gap-1">
+            <button
+              onClick={handleQuickReorder}
+              className="text-gray-400 hover:text-primary transition-colors duration-300 p-1"
+              aria-label={t("Quick reorder")}
+            >
+              <RotateCcw className="w-4 h-4" />
+            </button>
+            <button
+              onClick={handleToggleWishlist}
+              className="text-gray-400 hover:text-red-500 transition-colors duration-300"
+              aria-label={t("Toggle wishlist")}
+            >
+              <Heart
+                className={`w-5 h-5 transition-all duration-300 ${
+                  wishlistState.items.some(item => item.id === product.id)
+                    ? "fill-red-500 text-red-500 scale-110"
+                    : ""
+                }`}
+              />
+            </button>
+          </div>
         </div>
         <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">
           {t(product.name)}

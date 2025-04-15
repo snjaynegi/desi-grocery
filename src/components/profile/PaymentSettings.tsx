@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/components/ui/use-toast";
 import { CreditCard, Plus, Trash2 } from "lucide-react";
@@ -20,9 +19,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { useSupabaseClient } from "@supabase/auth-helpers-react";
 
 const PaymentSettings = () => {
   const { t } = useTranslation();
+  const supabase = useSupabaseClient();
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newCardDetails, setNewCardDetails] = useState({
@@ -33,11 +34,39 @@ const PaymentSettings = () => {
     cardholderName: '',
   });
 
+  useEffect(() => {
+    const fetchPaymentMethods = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session?.user) {
+          return;
+        }
+        
+        const { data, error } = await supabase
+          .from('payment_methods')
+          .select('*')
+          .eq('userId', session.user.id);
+          
+        if (error) {
+          console.error('Error fetching payment methods:', error);
+          return;
+        }
+        
+        setPaymentMethods(data || []);
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    };
+    
+    fetchPaymentMethods();
+  }, [supabase]);
+
   const handleAddPaymentClick = () => {
     setIsDialogOpen(true);
   };
 
-  const handleSubmitCardDetails = () => {
+  const handleSubmitCardDetails = async () => {
     // Basic validation
     if (!newCardDetails.cardType || !newCardDetails.cardNumber || !newCardDetails.expiryDate) {
       toast({
@@ -48,42 +77,93 @@ const PaymentSettings = () => {
       return;
     }
 
-    // Format card number to only show last 4 digits
-    const lastFourDigits = newCardDetails.cardNumber.slice(-4);
-    
-    const newMethod: PaymentMethod = {
-      id: Date.now().toString(),
-      type: 'card',
-      cardType: newCardDetails.cardType as 'visa' | 'mastercard' | 'amex' | 'discover',
-      lastFourDigits: lastFourDigits,
-      isDefault: paymentMethods.length === 0,
-      expiryDate: newCardDetails.expiryDate,
-    };
-    
-    setPaymentMethods([...paymentMethods, newMethod]);
-    setIsDialogOpen(false);
-    
-    // Reset form
-    setNewCardDetails({
-      cardType: '',
-      cardNumber: '',
-      expiryDate: '',
-      cvv: '',
-      cardholderName: '',
-    });
-    
-    toast({
-      title: t("Payment method added"),
-      description: t("Your payment method has been added successfully"),
-    });
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user) {
+        toast({
+          title: t("Authentication Error"),
+          description: t("Please sign in to add payment methods"),
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Format card number to only show last 4 digits
+      const lastFourDigits = newCardDetails.cardNumber.slice(-4);
+      
+      const newMethod: PaymentMethod = {
+        id: Date.now().toString(),
+        type: 'card',
+        cardType: newCardDetails.cardType as 'visa' | 'mastercard' | 'amex' | 'discover',
+        lastFourDigits: lastFourDigits,
+        isDefault: paymentMethods.length === 0,
+        expiryDate: newCardDetails.expiryDate,
+      };
+      
+      const { error } = await supabase
+        .from('payment_methods')
+        .insert([{
+          ...newMethod,
+          userId: session.user.id,
+          cardholderName: newCardDetails.cardholderName,
+        }]);
+        
+      if (error) {
+        throw error;
+      }
+      
+      setPaymentMethods([...paymentMethods, newMethod]);
+      setIsDialogOpen(false);
+      
+      // Reset form
+      setNewCardDetails({
+        cardType: '',
+        cardNumber: '',
+        expiryDate: '',
+        cvv: '',
+        cardholderName: '',
+      });
+      
+      toast({
+        title: t("Payment method added"),
+        description: t("Your payment method has been added successfully"),
+      });
+    } catch (error) {
+      console.error('Error adding payment method:', error);
+      toast({
+        title: t("Error"),
+        description: t("Failed to add payment method. Please try again."),
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleRemovePayment = (id: string) => {
-    setPaymentMethods(methods => methods.filter(method => method.id !== id));
-    toast({
-      title: t("Payment method removed"),
-      description: t("Your payment method has been removed successfully"),
-    });
+  const handleRemovePayment = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('payment_methods')
+        .delete()
+        .eq('id', id);
+        
+      if (error) {
+        throw error;
+      }
+      
+      setPaymentMethods(methods => methods.filter(method => method.id !== id));
+      
+      toast({
+        title: t("Payment method removed"),
+        description: t("Your payment method has been removed successfully"),
+      });
+    } catch (error) {
+      console.error('Error removing payment method:', error);
+      toast({
+        title: t("Error"),
+        description: t("Failed to remove payment method. Please try again."),
+        variant: "destructive",
+      });
+    }
   };
 
   return (

@@ -8,6 +8,11 @@ export interface User {
   createdAt: string;
   addresses?: Address[];
   preferences?: UserPreferences;
+  loyaltyPoints?: number;
+  membershipTier?: 'bronze' | 'silver' | 'gold';
+  viewedProducts?: string[]; // IDs of products the user has viewed
+  purchaseHistory?: PurchaseHistoryItem[];
+  favoriteCategories?: string[];
 }
 
 export interface Address {
@@ -18,6 +23,9 @@ export interface Address {
   state: string;
   zipCode: string;
   isDefault: boolean;
+  label?: string; // Custom label for the address
+  notes?: string; // Delivery instructions
+  frequentDeliveryTimes?: { day: string; timeSlot: string }[]; // For smart defaults
 }
 
 export interface UserPreferences {
@@ -29,6 +37,17 @@ export interface UserPreferences {
     sms: boolean;
   };
   dietaryPreferences?: string[];
+  recommendationsEnabled?: boolean;
+  autoReorderEnabled?: boolean;
+}
+
+export interface PurchaseHistoryItem {
+  orderId: string;
+  date: string;
+  products: {
+    productId: string;
+    quantity: number;
+  }[];
 }
 
 export interface PaymentMethod {

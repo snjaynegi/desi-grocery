@@ -14,7 +14,8 @@ import {
   Star,
   Shield,
   HelpCircle,
-  Menu
+  Menu,
+  MapPin
 } from "lucide-react";
 
 import PersonalInfo from "../components/profile/PersonalInfo";
@@ -26,6 +27,7 @@ import WishlistSection from "../components/profile/WishlistSection";
 import Reviews from "../components/profile/Reviews";
 import Security from "../components/profile/Security";
 import Support from "../components/profile/Support";
+import AddressManager from "../components/profile/AddressManager";
 
 const Profile = () => {
   const { t } = useTranslation();
@@ -35,6 +37,7 @@ const Profile = () => {
 
   const menuItems = [
     { id: "personal", name: t("Personal Info"), icon: User },
+    { id: "addresses", name: t("Addresses"), icon: MapPin },
     { id: "orders", name: t("Orders"), icon: ShoppingBag },
     { id: "payments", name: t("Payments"), icon: CreditCard },
     { id: "subscriptions", name: t("Subscriptions"), icon: Ticket },
@@ -94,6 +97,7 @@ const Profile = () => {
           {/* Main content */}
           <div className={`flex-1 ${isDarkMode ? 'bg-gray-800' : 'bg-white'} shadow rounded-lg p-6 animate-fadeIn`}>
             {activeTab === "personal" && <PersonalInfo />}
+            {activeTab === "addresses" && <AddressManager />}
             {activeTab === "orders" && <OrderHistory />}
             {activeTab === "payments" && <PaymentSettings />}
             {activeTab === "subscriptions" && <Subscriptions />}

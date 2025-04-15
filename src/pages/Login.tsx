@@ -1,13 +1,14 @@
 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "../context/AuthContext";
 import {
   Dialog,
   DialogContent,
@@ -16,18 +17,26 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Loader2 } from "lucide-react";
 
 const Login = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { signIn } = useAuth();
+  
+  // Get the redirect URL from the location state
+  const from = (location.state as { from?: { pathname: string } })?.from?.pathname || "/";
+  
   const [formData, setFormData] = useState({
-    username: "",
+    email: "",
     password: "",
   });
   const [errors, setErrors] = useState({
-    username: "",
+    email: "",
     password: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
   const [resetEmailError, setResetEmailError] = useState("");
@@ -36,12 +45,15 @@ const Login = () => {
   const validateForm = () => {
     let isValid = true;
     const newErrors = {
-      username: "",
+      email: "",
       password: "",
     };
 
-    if (!formData.username) {
-      newErrors.username = t("Username is required");
+    if (!formData.email) {
+      newErrors.email = t("Email is required");
+      isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = t("Invalid email format");
       isValid = false;
     }
 
@@ -70,14 +82,7 @@ const Login = () => {
       return false;
     }
     
-    // Check if email contains only special characters
-    if (/^[^a-zA-Z0-9]+$/.test(email)) {
-      setResetEmailError(t("Email cannot contain only special characters"));
-      return false;
-    }
-    
     // Check for proper email format with comprehensive validation
-    // Must have @ with text before and after, and a domain with at least one dot
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setResetEmailError(t("Invalid email format"));
       return false;
@@ -87,68 +92,63 @@ const Login = () => {
     return true;
   };
 
-  const handleForgotPassword = () => {
+  const handleForgotPassword = async () => {
     if (!validateResetEmail(resetEmail)) {
       return;
     }
     
     setResetInProgress(true);
     
-    // Get users from localStorage
-    const users = JSON.parse(localStorage.getItem("users") || "[]");
-    const userExists = users.some((u: any) => u.email === resetEmail);
-    
-    if (userExists) {
-      // Update the user's password to "password"
-      const updatedUsers = users.map((u: any) => {
-        if (u.email === resetEmail) {
-          return { ...u, password: "password" };
-        }
-        return u;
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/reset-password`,
       });
       
-      // Update localStorage
-      localStorage.setItem("users", JSON.stringify(updatedUsers));
-      
-      toast({
-        title: t("Password Reset Successful"),
-        description: t("Your password has been reset to 'password'"),
-      });
-      
-      // Close dialog and reset state
-      setForgotPasswordOpen(false);
-      setResetEmail("");
-    } else {
-      // If the email doesn't exist in our system
-      setResetEmailError(t("No account found with this email"));
+      if (error) {
+        setResetEmailError(error.message);
+      } else {
+        toast({
+          title: t("Password Reset Email Sent"),
+          description: t("Check your inbox for password reset instructions"),
+        });
+        setForgotPasswordOpen(false);
+        setResetEmail("");
+      }
+    } catch (err) {
+      console.error("Password reset error:", err);
+      setResetEmailError(t("An error occurred while processing your request"));
+    } finally {
+      setResetInProgress(false);
     }
-    
-    setResetInProgress(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-      // Check for demo user
-      if (formData.username === "demo" && formData.password === "demo123") {
-        // Create demo user if it doesn't exist
+    
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
+    
+    try {
+      // Handle demo user login
+      if (formData.email === "demo@example.com" && formData.password === "demo123") {
+        // Demo login logic is preserved
         const demoUser = {
           id: "demo-user",
           name: "Demo User",
-          username: "demo",
           email: "demo@example.com",
           status: "active",
           registrationDate: new Date().toISOString().split('T')[0],
           avatar: `https://api.dicebear.com/7.x/initials/svg?seed=Demo User`
         };
         
-        // Store login status and user information
+        // Store login status and user information for demo user
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("currentUser", JSON.stringify(demoUser));
 
         // Reset form data
         setFormData({
-          username: "",
+          email: "",
           password: "",
         });
         
@@ -156,46 +156,42 @@ const Login = () => {
           title: t("Login Successful"),
           description: t("Welcome to demo account!"),
         });
-        navigate("/");
+        navigate(from);
         return;
       }
+    
+      // Actual Supabase authentication
+      const { error, data } = await signIn(formData.email, formData.password);
       
-      // Get registered users from localStorage
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const user = users.find(
-        (u: any) =>
-          u.username === formData.username && u.password === formData.password
-      );
-
-      if (user) {
-        // Store login status and user information
-        localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("currentUser", JSON.stringify(user));
-
-        // Reset form data
-        setFormData({
-          username: "",
-          password: "",
-        });
-        
-        toast({
-          title: t("Login Successful"),
-          description: t("Welcome back!"),
-        });
-        navigate("/");
-      } else {
+      if (error) {
         // Reset password field on failed login
-        setFormData(prev => ({
-          ...prev,
-          password: "",
-        }));
+        setFormData(prev => ({ ...prev, password: "" }));
         
         toast({
           title: t("Login Failed"),
-          description: t("Invalid username or password"),
+          description: error.message || t("Invalid email or password"),
           variant: "destructive",
         });
+        return;
       }
+      
+      // Success
+      toast({
+        title: t("Login Successful"),
+        description: t("Welcome back!"),
+      });
+      
+      // Navigate to the page the user was trying to access, or home
+      navigate(from);
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: t("Login Failed"),
+        description: t("An unexpected error occurred"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -221,24 +217,24 @@ const Login = () => {
           <form className="mt-8 space-y-6" onSubmit={handleSubmit} autoComplete="off">
             <div className="rounded-md shadow-sm -space-y-px">
               <div>
-                <Label htmlFor="username" className="sr-only">
-                  {t("Username")}
+                <Label htmlFor="email" className="sr-only">
+                  {t("Email")}
                 </Label>
                 <Input
-                  id="username"
-                  name="username"
-                  type="text"
+                  id="email"
+                  name="email"
+                  type="email"
                   required
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-400"
-                  placeholder={t("Username")}
-                  value={formData.username}
+                  placeholder={t("Email address")}
+                  value={formData.email}
                   onChange={(e) =>
-                    setFormData({ ...formData, username: e.target.value })
+                    setFormData({ ...formData, email: e.target.value })
                   }
-                  autoComplete="off"
+                  autoComplete="email"
                 />
-                {errors.username && (
-                  <p className="text-red-500 text-xs mt-1">{errors.username}</p>
+                {errors.email && (
+                  <p className="text-red-500 text-xs mt-1">{errors.email}</p>
                 )}
               </div>
               <div>
@@ -256,7 +252,7 @@ const Login = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
                   }
-                  autoComplete="new-password"
+                  autoComplete="current-password"
                 />
                 {errors.password && (
                   <p className="text-red-500 text-xs mt-1">{errors.password}</p>
@@ -268,8 +264,16 @@ const Login = () => {
               <Button
                 type="submit"
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:bg-green-700 dark:hover:bg-green-600 dark:focus:ring-green-500"
+                disabled={isLoading}
               >
-                {t("Sign in")}
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t("Signing in...")}
+                  </>
+                ) : (
+                  t("Sign in")
+                )}
               </Button>
             </div>
             
@@ -333,7 +337,14 @@ const Login = () => {
               onClick={handleForgotPassword}
               disabled={resetInProgress || !resetEmail}
             >
-              {resetInProgress ? t("Resetting...") : t("Reset Password")}
+              {resetInProgress ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t("Resetting...")}
+                </>
+              ) : (
+                t("Reset Password")
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

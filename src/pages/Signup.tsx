@@ -8,11 +8,14 @@ import Footer from "../components/Footer";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { useAuth } from "../context/AuthContext";
+import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Signup = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { signUp } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     username: "",
@@ -27,6 +30,7 @@ const Signup = () => {
     password: "",
     confirmPassword: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = () => {
     let isValid = true;
@@ -79,43 +83,58 @@ const Signup = () => {
     return isValid;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-      // Get existing users
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      
-      // Check if email or username already exists
-      if (users.some((user: any) => user.email === formData.email)) {
-        toast({
-          title: t("Registration Failed"),
-          description: t("Email already exists"),
-          variant: "destructive",
-        });
-        return;
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
+    
+    try {
+      // Check if username is already taken
+      const { data: existingUsers, error: fetchError } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('username', formData.username)
+        .maybeSingle();
+        
+      if (fetchError) {
+        throw fetchError;
       }
-
-      if (users.some((user: any) => user.username === formData.username)) {
+      
+      if (existingUsers) {
+        setErrors(prev => ({ ...prev, username: t("Username already exists") }));
         toast({
           title: t("Registration Failed"),
           description: t("Username already exists"),
           variant: "destructive",
         });
+        setIsLoading(false);
         return;
       }
-
-      // Add new user
-      const newUser = {
-        id: Date.now().toString(),
-        name: formData.name,
-        username: formData.username,
-        email: formData.email,
-        password: formData.password,
-        createdAt: new Date().toISOString(),
-      };
-
-      users.push(newUser);
-      localStorage.setItem("users", JSON.stringify(users));
+      
+      // Register user with Supabase
+      const { error, data } = await signUp(
+        formData.email, 
+        formData.password, 
+        {
+          name: formData.name,
+          username: formData.username
+        }
+      );
+      
+      if (error) {
+        if (error.message?.toLowerCase().includes('email')) {
+          setErrors(prev => ({ ...prev, email: t(error.message) }));
+        } else {
+          toast({
+            title: t("Registration Failed"),
+            description: error.message,
+            variant: "destructive",
+          });
+        }
+        setIsLoading(false);
+        return;
+      }
       
       // Reset form data
       setFormData({
@@ -130,7 +149,25 @@ const Signup = () => {
         title: t("Account created successfully"),
         description: t("Welcome to Desi Grocery!"),
       });
+      
+      // If email confirmation is enabled in Supabase, show appropriate message
+      if (!data) {
+        toast({
+          title: t("Verification email sent"),
+          description: t("Please check your email to confirm your account"),
+        });
+      }
+      
       navigate("/login");
+    } catch (err: any) {
+      console.error("Registration error:", err);
+      toast({
+        title: t("Registration Failed"),
+        description: err.message || t("An unexpected error occurred"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -170,7 +207,7 @@ const Signup = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  autoComplete="off"
+                  autoComplete="name"
                 />
                 {errors.name && (
                   <p className="text-red-500 text-xs mt-1">{errors.name}</p>
@@ -192,7 +229,7 @@ const Signup = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, username: e.target.value })
                   }
-                  autoComplete="off"
+                  autoComplete="username"
                 />
                 {errors.username && (
                   <p className="text-red-500 text-xs mt-1">{errors.username}</p>
@@ -214,7 +251,7 @@ const Signup = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  autoComplete="off"
+                  autoComplete="email"
                 />
                 {errors.email && (
                   <p className="text-red-500 text-xs mt-1">{errors.email}</p>
@@ -272,8 +309,16 @@ const Signup = () => {
               <Button
                 type="submit"
                 className="w-full"
+                disabled={isLoading}
               >
-                {t("Sign up")}
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t("Signing up...")}
+                  </>
+                ) : (
+                  t("Sign up")
+                )}
               </Button>
             </div>
           </form>

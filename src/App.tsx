@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
 import { WishlistProvider } from "./context/WishlistContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { AuthProvider } from "./context/AuthContext";
 import "./i18n/config";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -36,69 +37,71 @@ const queryClient = new QueryClient({
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <CartProvider>
-          <WishlistProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <React.Suspense fallback={<div>Loading...</div>}>
-                <BrowserRouter>
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<Signup />} />
-                    <Route path="/product/:id" element={<ProductDetail />} />
-                    <Route
-                      path="/cart"
-                      element={
-                        <PrivateRoute>
-                          <Cart />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route
-                      path="/wishlist"
-                      element={
-                        <PrivateRoute>
-                          <Wishlist />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route
-                      path="/orders"
-                      element={
-                        <PrivateRoute>
-                          <OrderHistory />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route
-                      path="/grievance"
-                      element={
-                        <PrivateRoute>
-                          <Grievance />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route
-                      path="/profile"
-                      element={
-                        <PrivateRoute>
-                          <Profile />
-                        </PrivateRoute>
-                      }
-                    />
-                    <Route path="/admin/login" element={<AdminLogin />} />
-                    <Route path="/admin" element={<Admin />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </BrowserRouter>
-              </React.Suspense>
-            </TooltipProvider>
-          </WishlistProvider>
-        </CartProvider>
-      </ThemeProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <ThemeProvider>
+            <CartProvider>
+              <WishlistProvider>
+                <TooltipProvider>
+                  <Toaster />
+                  <Sonner />
+                  <React.Suspense fallback={<div>Loading...</div>}>
+                    <Routes>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/signup" element={<Signup />} />
+                      <Route path="/product/:id" element={<ProductDetail />} />
+                      <Route
+                        path="/cart"
+                        element={
+                          <PrivateRoute>
+                            <Cart />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+                        path="/wishlist"
+                        element={
+                          <PrivateRoute>
+                            <Wishlist />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+                        path="/orders"
+                        element={
+                          <PrivateRoute>
+                            <OrderHistory />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+                        path="/grievance"
+                        element={
+                          <PrivateRoute>
+                            <Grievance />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route
+                        path="/profile"
+                        element={
+                          <PrivateRoute>
+                            <Profile />
+                          </PrivateRoute>
+                        }
+                      />
+                      <Route path="/admin/login" element={<AdminLogin />} />
+                      <Route path="/admin" element={<Admin />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </React.Suspense>
+                </TooltipProvider>
+              </WishlistProvider>
+            </CartProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
 };

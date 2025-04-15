@@ -6,11 +6,14 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 const Security = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const { user, signOut } = useAuth();
   const [formData, setFormData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -25,23 +28,53 @@ const Security = () => {
     newEmail: "",
     newUsername: "",
   });
+  const [loading, setLoading] = useState({
+    password: false,
+    email: false,
+    username: false,
+    account: false
+  });
+  const [profileData, setProfileData] = useState<{
+    username?: string;
+    name?: string;
+    email?: string;
+  }>({});
 
   useEffect(() => {
-    // Get current user data
-    try {
-      const userData = JSON.parse(localStorage.getItem("currentUser") || "{}");
-      setCurrentUser(userData);
-      if (userData && userData.email) {
+    const fetchProfileData = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('username, name')
+          .eq('id', user.id)
+          .single();
+          
+        if (error) {
+          console.error('Error fetching profile:', error);
+          return;
+        }
+        
+        setProfileData({
+          username: data.username,
+          name: data.name,
+          email: user.email
+        });
+        
+        // Set initial form data
         setFormData(prev => ({
           ...prev,
-          newEmail: userData.email,
-          newUsername: userData.name || "",
+          newEmail: user.email || '',
+          newUsername: data.username || ''
         }));
+      } catch (err) {
+        console.error("Error loading user data", err);
       }
-    } catch (error) {
-      console.error("Error loading user data", error);
-    }
-  }, []);
+    };
+    
+    fetchProfileData();
+  }, [user]);
 
   const validateForm = (field: string) => {
     const newErrors = { ...errors };
@@ -101,37 +134,44 @@ const Security = () => {
     return fieldErrors.every(error => error === "");
   };
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async () => {
     if (!validateForm('password')) return;
     
-    // In a real app, we would make an API call to change the password
-    // For now, we'll simulate the change
+    setLoading({ ...loading, password: true });
+    
     try {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const userIndex = users.findIndex((user: any) => user.email === currentUser.email);
+      // First verify current password
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user?.email || '',
+        password: formData.currentPassword
+      });
       
-      if (userIndex !== -1) {
-        // Check if current password is correct
-        if (users[userIndex].password !== formData.currentPassword) {
-          setErrors(prev => ({ ...prev, currentPassword: t("Current password is incorrect") }));
-          return;
-        }
-        
-        // Update password
-        users[userIndex].password = formData.newPassword;
-        localStorage.setItem("users", JSON.stringify(users));
-        
-        // Update current user
-        localStorage.setItem("currentUser", JSON.stringify(users[userIndex]));
-        
-        toast({
-          title: t("Password updated"),
-          description: t("Your password has been updated successfully"),
-        });
-        
-        // Reset form
-        setFormData(prev => ({ ...prev, currentPassword: "", newPassword: "", confirmPassword: "" }));
+      if (signInError) {
+        setErrors(prev => ({ ...prev, currentPassword: t("Current password is incorrect") }));
+        return;
       }
+      
+      // Update password
+      const { error } = await supabase.auth.updateUser({
+        password: formData.newPassword
+      });
+      
+      if (error) {
+        toast({
+          title: t("Error"),
+          description: error.message || t("Failed to update password"),
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      toast({
+        title: t("Password updated"),
+        description: t("Your password has been updated successfully"),
+      });
+      
+      // Reset form
+      setFormData(prev => ({ ...prev, currentPassword: "", newPassword: "", confirmPassword: "" }));
     } catch (error) {
       console.error("Error updating password", error);
       toast({
@@ -139,32 +179,35 @@ const Security = () => {
         description: t("Failed to update password"),
         variant: "destructive",
       });
+    } finally {
+      setLoading({ ...loading, password: false });
     }
   };
 
-  const handleEmailChange = () => {
+  const handleEmailChange = async () => {
     if (!validateForm('email')) return;
     
+    setLoading({ ...loading, email: true });
+    
     try {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const userIndex = users.findIndex((user: any) => user.email === currentUser.email);
+      const { error } = await supabase.auth.updateUser({
+        email: formData.newEmail
+      });
       
-      if (userIndex !== -1) {
-        // Update email
-        const oldEmail = users[userIndex].email;
-        users[userIndex].email = formData.newEmail;
-        localStorage.setItem("users", JSON.stringify(users));
-        
-        // Update current user
-        const updatedUser = { ...currentUser, email: formData.newEmail };
-        localStorage.setItem("currentUser", JSON.stringify(updatedUser));
-        setCurrentUser(updatedUser);
-        
+      if (error) {
         toast({
-          title: t("Email updated"),
-          description: t("Your email has been changed from ") + oldEmail + t(" to ") + formData.newEmail,
+          title: t("Error"),
+          description: error.message || t("Failed to update email"),
+          variant: "destructive",
         });
+        return;
       }
+      
+      // Email update requires verification in most Supabase projects
+      toast({
+        title: t("Verification email sent"),
+        description: t("Please check your new email to confirm the change"),
+      });
     } catch (error) {
       console.error("Error updating email", error);
       toast({
@@ -172,32 +215,68 @@ const Security = () => {
         description: t("Failed to update email"),
         variant: "destructive",
       });
+    } finally {
+      setLoading({ ...loading, email: false });
     }
   };
 
-  const handleUsernameChange = () => {
+  const handleUsernameChange = async () => {
     if (!validateForm('username')) return;
     
+    setLoading({ ...loading, username: true });
+    
     try {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const userIndex = users.findIndex((user: any) => user.email === currentUser.email);
-      
-      if (userIndex !== -1) {
-        // Update username
-        const oldName = users[userIndex].name || "";
-        users[userIndex].name = formData.newUsername;
-        localStorage.setItem("users", JSON.stringify(users));
+      // Check if username is already taken
+      const { data: existingUsers, error: fetchError } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('username', formData.newUsername)
+        .neq('id', user?.id)
+        .maybeSingle();
         
-        // Update current user
-        const updatedUser = { ...currentUser, name: formData.newUsername };
-        localStorage.setItem("currentUser", JSON.stringify(updatedUser));
-        setCurrentUser(updatedUser);
-        
-        toast({
-          title: t("Username updated"),
-          description: t("Your username has been updated successfully"),
-        });
+      if (fetchError) {
+        throw fetchError;
       }
+      
+      if (existingUsers) {
+        setErrors(prev => ({ ...prev, newUsername: t("Username already exists") }));
+        toast({
+          title: t("Error"),
+          description: t("Username already exists"),
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Update username in profile table
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          username: formData.newUsername,
+          updated_at: new Date()
+        })
+        .eq('id', user?.id);
+      
+      if (error) {
+        toast({
+          title: t("Error"),
+          description: error.message || t("Failed to update username"),
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Update user metadata
+      await supabase.auth.updateUser({
+        data: { username: formData.newUsername }
+      });
+      
+      setProfileData(prev => ({ ...prev, username: formData.newUsername }));
+      
+      toast({
+        title: t("Username updated"),
+        description: t("Your username has been updated successfully"),
+      });
     } catch (error) {
       console.error("Error updating username", error);
       toast({
@@ -205,22 +284,36 @@ const Security = () => {
         description: t("Failed to update username"),
         variant: "destructive",
       });
+    } finally {
+      setLoading({ ...loading, username: false });
     }
   };
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
     if (!window.confirm(t("Are you sure you want to delete your account? This action cannot be undone."))) {
       return;
     }
     
+    setLoading({ ...loading, account: true });
+    
     try {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const updatedUsers = users.filter((user: any) => user.email !== currentUser.email);
-      localStorage.setItem("users", JSON.stringify(updatedUsers));
+      // In production, this should be handled by an admin or server function
+      // For demo purposes only - this won't actually delete the auth user
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', user?.id);
       
-      // Clear login status
-      localStorage.removeItem("isLoggedIn");
-      localStorage.removeItem("currentUser");
+      if (error) {
+        toast({
+          title: t("Error"),
+          description: error.message || t("Failed to delete account"),
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      await signOut();
       
       toast({
         title: t("Account deleted"),
@@ -235,19 +328,13 @@ const Security = () => {
         description: t("Failed to delete account"),
         variant: "destructive",
       });
+    } finally {
+      setLoading({ ...loading, account: false });
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("currentUser");
-    
-    toast({
-      title: t("Logged out"),
-      description: t("You have been successfully logged out"),
-    });
-    
-    navigate("/");
+  const handleLogout = async () => {
+    await signOut();
   };
 
   return (
@@ -268,8 +355,16 @@ const Security = () => {
           <Button 
             onClick={handleUsernameChange}
             className="bg-primary text-white hover:bg-primary/90 transition-colors"
+            disabled={loading.username}
           >
-            {t("Update Username")}
+            {loading.username ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {t("Updating...")}
+              </>
+            ) : (
+              t("Update Username")
+            )}
           </Button>
         </div>
       </div>
@@ -290,8 +385,16 @@ const Security = () => {
           <Button 
             onClick={handleEmailChange}
             className="bg-primary text-white hover:bg-primary/90 transition-colors"
+            disabled={loading.email}
           >
-            {t("Update Email")}
+            {loading.email ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {t("Updating...")}
+              </>
+            ) : (
+              t("Update Email")
+            )}
           </Button>
         </div>
       </div>
@@ -332,8 +435,16 @@ const Security = () => {
           <Button 
             onClick={handlePasswordChange}
             className="bg-primary text-white hover:bg-primary/90 transition-colors"
+            disabled={loading.password}
           >
-            {t("Change Password")}
+            {loading.password ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {t("Updating...")}
+              </>
+            ) : (
+              t("Change Password")
+            )}
           </Button>
         </div>
       </div>
@@ -364,8 +475,16 @@ const Security = () => {
           <Button 
             onClick={handleDeleteAccount}
             className="w-full bg-red-500 text-white hover:bg-red-600"
+            disabled={loading.account}
           >
-            {t("Delete Account")}
+            {loading.account ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {t("Deleting...")}
+              </>
+            ) : (
+              t("Delete Account")
+            )}
           </Button>
         </div>
       </div>

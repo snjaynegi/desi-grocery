@@ -5,6 +5,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -13,17 +16,16 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 
 const Login = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    email: "",
+    username: "",
     password: "",
   });
   const [errors, setErrors] = useState({
-    email: "",
+    username: "",
     password: "",
   });
   const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
@@ -34,15 +36,12 @@ const Login = () => {
   const validateForm = () => {
     let isValid = true;
     const newErrors = {
-      email: "",
+      username: "",
       password: "",
     };
 
-    if (!formData.email) {
-      newErrors.email = t("Email is required");
-      isValid = false;
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = t("Invalid email format");
+    if (!formData.username) {
+      newErrors.username = t("Username is required");
       isValid = false;
     }
 
@@ -131,12 +130,13 @@ const Login = () => {
     e.preventDefault();
     if (validateForm()) {
       // Check for demo user
-      if (formData.email === "demo" && formData.password === "demo123") {
+      if (formData.username === "demo" && formData.password === "demo123") {
         // Create demo user if it doesn't exist
         const demoUser = {
           id: "demo-user",
           name: "Demo User",
-          email: "demo",
+          username: "demo",
+          email: "demo@example.com",
           status: "active",
           registrationDate: new Date().toISOString().split('T')[0],
           avatar: `https://api.dicebear.com/7.x/initials/svg?seed=Demo User`
@@ -148,7 +148,7 @@ const Login = () => {
 
         // Reset form data
         setFormData({
-          email: "",
+          username: "",
           password: "",
         });
         
@@ -164,7 +164,7 @@ const Login = () => {
       const users = JSON.parse(localStorage.getItem("users") || "[]");
       const user = users.find(
         (u: any) =>
-          u.email === formData.email && u.password === formData.password
+          u.username === formData.username && u.password === formData.password
       );
 
       if (user) {
@@ -174,7 +174,7 @@ const Login = () => {
 
         // Reset form data
         setFormData({
-          email: "",
+          username: "",
           password: "",
         });
         
@@ -192,7 +192,7 @@ const Login = () => {
         
         toast({
           title: t("Login Failed"),
-          description: t("Invalid email or password"),
+          description: t("Invalid username or password"),
           variant: "destructive",
         });
       }
@@ -221,31 +221,31 @@ const Login = () => {
           <form className="mt-8 space-y-6" onSubmit={handleSubmit} autoComplete="off">
             <div className="rounded-md shadow-sm -space-y-px">
               <div>
-                <label htmlFor="email" className="sr-only">
-                  {t("Email")}
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
+                <Label htmlFor="username" className="sr-only">
+                  {t("Username")}
+                </Label>
+                <Input
+                  id="username"
+                  name="username"
+                  type="text"
                   required
                   className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:placeholder-gray-400"
-                  placeholder={t("Email address")}
-                  value={formData.email}
+                  placeholder={t("Username")}
+                  value={formData.username}
                   onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
+                    setFormData({ ...formData, username: e.target.value })
                   }
                   autoComplete="off"
                 />
-                {errors.email && (
-                  <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+                {errors.username && (
+                  <p className="text-red-500 text-xs mt-1">{errors.username}</p>
                 )}
               </div>
               <div>
-                <label htmlFor="password" className="sr-only">
+                <Label htmlFor="password" className="sr-only">
                   {t("Password")}
-                </label>
-                <input
+                </Label>
+                <Input
                   id="password"
                   name="password"
                   type="password"
@@ -265,12 +265,12 @@ const Login = () => {
             </div>
 
             <div>
-              <button
+              <Button
                 type="submit"
                 className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:bg-green-700 dark:hover:bg-green-600 dark:focus:ring-green-500"
               >
                 {t("Sign in")}
-              </button>
+              </Button>
             </div>
             
             <div className="text-center mt-4">
@@ -298,16 +298,16 @@ const Login = () => {
           
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label htmlFor="reset-email" className="text-sm font-medium">
+              <Label htmlFor="reset-email" className="text-sm font-medium">
                 {t("Email")}
-              </label>
-              <input
+              </Label>
+              <Input
                 id="reset-email"
                 type="email"
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
                 onBlur={() => validateResetEmail(resetEmail)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                className="w-full"
                 placeholder={t("Email address")}
               />
               {resetEmailError && (

@@ -5,18 +5,24 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 
 const Signup = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
   const [errors, setErrors] = useState({
     name: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -26,6 +32,7 @@ const Signup = () => {
     let isValid = true;
     const newErrors = {
       name: "",
+      username: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -33,6 +40,14 @@ const Signup = () => {
 
     if (!formData.name) {
       newErrors.name = t("Name is required");
+      isValid = false;
+    }
+
+    if (!formData.username) {
+      newErrors.username = t("Username is required");
+      isValid = false;
+    } else if (formData.username.length < 3) {
+      newErrors.username = t("Username must be at least 3 characters");
       isValid = false;
     }
 
@@ -70,7 +85,7 @@ const Signup = () => {
       // Get existing users
       const users = JSON.parse(localStorage.getItem("users") || "[]");
       
-      // Check if email already exists
+      // Check if email or username already exists
       if (users.some((user: any) => user.email === formData.email)) {
         toast({
           title: t("Registration Failed"),
@@ -80,12 +95,23 @@ const Signup = () => {
         return;
       }
 
+      if (users.some((user: any) => user.username === formData.username)) {
+        toast({
+          title: t("Registration Failed"),
+          description: t("Username already exists"),
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Add new user
       const newUser = {
         id: Date.now().toString(),
         name: formData.name,
+        username: formData.username,
         email: formData.email,
         password: formData.password,
+        createdAt: new Date().toISOString(),
       };
 
       users.push(newUser);
@@ -94,6 +120,7 @@ const Signup = () => {
       // Reset form data
       setFormData({
         name: "",
+        username: "",
         email: "",
         password: "",
         confirmPassword: "",
@@ -126,18 +153,18 @@ const Signup = () => {
               </Link>
             </p>
           </div>
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit} autoComplete="off">
-            <div className="rounded-md shadow-sm -space-y-px">
+          <form className="mt-8 space-y-4" onSubmit={handleSubmit} autoComplete="off">
+            <div className="space-y-4">
               <div>
-                <label htmlFor="name" className="sr-only">
+                <Label htmlFor="name">
                   {t("Name")}
-                </label>
-                <input
+                </Label>
+                <Input
                   id="name"
                   name="name"
                   type="text"
                   required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+                  className="mt-1"
                   placeholder={t("Full name")}
                   value={formData.name}
                   onChange={(e) =>
@@ -149,16 +176,39 @@ const Signup = () => {
                   <p className="text-red-500 text-xs mt-1">{errors.name}</p>
                 )}
               </div>
+              
               <div>
-                <label htmlFor="email" className="sr-only">
+                <Label htmlFor="username">
+                  {t("Username")}
+                </Label>
+                <Input
+                  id="username"
+                  name="username"
+                  type="text"
+                  required
+                  className="mt-1"
+                  placeholder={t("Username")}
+                  value={formData.username}
+                  onChange={(e) =>
+                    setFormData({ ...formData, username: e.target.value })
+                  }
+                  autoComplete="off"
+                />
+                {errors.username && (
+                  <p className="text-red-500 text-xs mt-1">{errors.username}</p>
+                )}
+              </div>
+              
+              <div>
+                <Label htmlFor="email">
                   {t("Email")}
-                </label>
-                <input
+                </Label>
+                <Input
                   id="email"
                   name="email"
                   type="email"
                   required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+                  className="mt-1"
                   placeholder={t("Email address")}
                   value={formData.email}
                   onChange={(e) =>
@@ -170,16 +220,17 @@ const Signup = () => {
                   <p className="text-red-500 text-xs mt-1">{errors.email}</p>
                 )}
               </div>
+              
               <div>
-                <label htmlFor="password" className="sr-only">
+                <Label htmlFor="password">
                   {t("Password")}
-                </label>
-                <input
+                </Label>
+                <Input
                   id="password"
                   name="password"
                   type="password"
                   required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+                  className="mt-1"
                   placeholder={t("Password")}
                   value={formData.password}
                   onChange={(e) =>
@@ -191,16 +242,17 @@ const Signup = () => {
                   <p className="text-red-500 text-xs mt-1">{errors.password}</p>
                 )}
               </div>
+              
               <div>
-                <label htmlFor="confirmPassword" className="sr-only">
+                <Label htmlFor="confirmPassword">
                   {t("Confirm Password")}
-                </label>
-                <input
+                </Label>
+                <Input
                   id="confirmPassword"
                   name="confirmPassword"
                   type="password"
                   required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-primary focus:border-primary focus:z-10 sm:text-sm"
+                  className="mt-1"
                   placeholder={t("Confirm password")}
                   value={formData.confirmPassword}
                   onChange={(e) =>
@@ -216,13 +268,13 @@ const Signup = () => {
               </div>
             </div>
 
-            <div>
-              <button
+            <div className="mt-6">
+              <Button
                 type="submit"
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                className="w-full"
               >
                 {t("Sign up")}
-              </button>
+              </Button>
             </div>
           </form>
         </div>

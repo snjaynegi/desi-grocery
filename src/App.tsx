@@ -39,9 +39,9 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <CartProvider>
-          <AuthProvider>
+          <WishlistProvider>
             <ThemeProvider>
-              <WishlistProvider>
+              <AuthProvider>
                 <TooltipProvider>
                   <Toaster />
                   <Sonner />
@@ -97,9 +97,9 @@ const App = () => {
                     </Routes>
                   </React.Suspense>
                 </TooltipProvider>
-              </WishlistProvider>
+              </AuthProvider>
             </ThemeProvider>
-          </AuthProvider>
+          </WishlistProvider>
         </CartProvider>
       </BrowserRouter>
     </QueryClientProvider>

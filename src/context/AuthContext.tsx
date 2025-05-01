@@ -3,7 +3,6 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
-import { useCart } from './CartContext';
 
 type AuthContextType = {
   user: User | null;
@@ -27,7 +26,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { restoreCartFromLocalStorage } = useCart();
 
   const logUserSession = async (eventType: 'login' | 'logout') => {
     if (!user) return;
@@ -57,7 +55,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (event === 'SIGNED_IN') {
           logUserSession('login');
-          restoreCartFromLocalStorage();
           navigate('/');
         } else if (event === 'SIGNED_OUT') {
           logUserSession('logout');
@@ -76,7 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, restoreCartFromLocalStorage]);
+  }, [navigate]);
 
   const signIn = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({

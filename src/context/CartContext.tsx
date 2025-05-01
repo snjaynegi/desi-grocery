@@ -1,5 +1,6 @@
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CartItem {
   id: string;
@@ -26,7 +27,6 @@ type CartAction =
 const CartContext = createContext<{
   state: CartState;
   dispatch: React.Dispatch<CartAction>;
-  restoreCartFromLocalStorage: () => void;
 } | null>(null);
 
 // Helper function to calculate commission and final total
@@ -136,6 +136,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     finalTotal: 0
   });
 
+  // Function to restore cart from localStorage
   const restoreCartFromLocalStorage = useCallback(() => {
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
@@ -148,12 +149,33 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
+  // Listen for auth state changes to restore cart
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        restoreCartFromLocalStorage();
+      }
+    });
+
+    // Check if user is already signed in and restore cart
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        restoreCartFromLocalStorage();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [restoreCartFromLocalStorage]);
+
+  // Save cart to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(state));
   }, [state]);
 
   return (
-    <CartContext.Provider value={{ state, dispatch, restoreCartFromLocalStorage }}>
+    <CartContext.Provider value={{ state, dispatch }}>
       {children}
     </CartContext.Provider>
   );

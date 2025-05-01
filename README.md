@@ -31,8 +31,8 @@ This project is built with .
 ## Credentails Information
 
 Main application:-
-- Username: 
-- Password: 
+- Username: demo@gmail.com
+- Password: demo123
 -----------------------------------------
 Admin:-
 - Username - admin

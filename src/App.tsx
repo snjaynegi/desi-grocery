@@ -38,9 +38,9 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <CartProvider>
-          <WishlistProvider>
-            <ThemeProvider>
+        <ThemeProvider>
+          <CartProvider>
+            <WishlistProvider>
               <AuthProvider>
                 <TooltipProvider>
                   <Toaster />
@@ -98,9 +98,9 @@ const App = () => {
                   </React.Suspense>
                 </TooltipProvider>
               </AuthProvider>
-            </ThemeProvider>
-          </WishlistProvider>
-        </CartProvider>
+            </WishlistProvider>
+          </CartProvider>
+        </ThemeProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );

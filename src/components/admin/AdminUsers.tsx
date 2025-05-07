@@ -31,7 +31,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, UserCheck, UserX, Trash2, KeyRound, UserPlus } from "lucide-react";
+import { Search, UserCheck, UserX, Trash2, KeyRound, UserPlus, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import UserCreationForm from "./UserCreationForm";
 
@@ -73,12 +73,12 @@ const AdminUsers = () => {
       }
       
       if (authUsers) {
-        // Map auth users to our format
+        // Map auth users to our format with explicit status typing
         const formattedUsers: User[] = authUsers.users.map(user => ({
           id: user.id,
           name: user.user_metadata?.name || 'No Name',
           email: user.email || 'No Email',
-          status: user.user_metadata?.status === 'inactive' ? 'inactive' : 'active',
+          status: (user.user_metadata?.status === 'inactive' ? 'inactive' : 'active') as "active" | "inactive",
           registrationDate: new Date(user.created_at).toISOString().split('T')[0],
           avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.user_metadata?.name || user.email || '')}`
         }));
@@ -93,7 +93,7 @@ const AdminUsers = () => {
         variant: "destructive",
       });
       
-      // Use mock data as fallback
+      // Use mock data as fallback with explicit typing
       setUsers(generateMockUsers(5));
     } finally {
       setLoading(false);

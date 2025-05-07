@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   name: string;
@@ -14,6 +13,9 @@ export interface User {
   viewedProducts?: string[]; // IDs of products the user has viewed
   purchaseHistory?: PurchaseHistoryItem[];
   favoriteCategories?: string[];
+  status?: 'active' | 'inactive';
+  registrationDate?: string;
+  avatar?: string;
 }
 
 export interface Address {

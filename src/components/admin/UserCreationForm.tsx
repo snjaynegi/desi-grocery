@@ -69,6 +69,14 @@ const UserCreationForm: React.FC = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Clear the error for this field when user starts typing
+    if (errors[name as keyof UserFormData]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: undefined
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -85,7 +93,8 @@ const UserCreationForm: React.FC = () => {
         password: formData.password,
         user_metadata: {
           name: formData.name,
-          username: formData.username
+          username: formData.username,
+          status: status
         },
         email_confirm: true
       });
@@ -95,14 +104,6 @@ const UserCreationForm: React.FC = () => {
       }
       
       if (data.user) {
-        // Set the user's status if needed
-        if (status === "inactive") {
-          await supabase.auth.admin.updateUserById(
-            data.user.id,
-            { user_metadata: { status: "inactive" } }
-          );
-        }
-        
         toast({
           title: t("User created successfully"),
           description: t("The new user has been added to the system")

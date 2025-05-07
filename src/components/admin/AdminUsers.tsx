@@ -51,7 +51,7 @@ const AdminUsers = () => {
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("list");
   
   // Dialog states
@@ -84,62 +84,23 @@ const AdminUsers = () => {
         }));
         
         setUsers(formattedUsers);
+        setFilteredUsers(formattedUsers);
       }
     } catch (error) {
       console.error("Error fetching users:", error);
       toast({
         title: t("Failed to load users"),
-        description: t("Could not retrieve user list from the database"),
+        description: t("Could not retrieve user list from the database. Please check your admin permissions."),
         variant: "destructive",
       });
       
-      // Use mock data as fallback with explicit typing
-      setUsers(generateMockUsers(5));
+      // Initialize with empty array instead of mock data
+      setUsers([]);
+      setFilteredUsers([]);
     } finally {
       setLoading(false);
     }
   };
-  
-  // Generate mock users data for fallback
-  const generateMockUsers = (count: number): User[] => {
-    const users: User[] = [];
-    const statuses: ("active" | "inactive")[] = ["active", "inactive"];
-    const domains = ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "example.com"];
-    
-    for (let i = 1; i <= count; i++) {
-      const firstName = ["John", "Alice", "Robert", "Emma", "Michael", "Sophia", "William", "Olivia"][
-        Math.floor(Math.random() * 8)
-      ];
-      const lastName = ["Smith", "Johnson", "Brown", "Davis", "Wilson", "Miller", "Taylor", "Anderson"][
-        Math.floor(Math.random() * 8)
-      ];
-      const name = `${firstName} ${lastName}`;
-      const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${Math.floor(Math.random() * 1000)}@${
-        domains[Math.floor(Math.random() * domains.length)]
-      }`;
-      
-      const status = statuses[Math.floor(Math.random() * statuses.length)];
-      const day = Math.floor(Math.random() * 28) + 1;
-      const month = Math.floor(Math.random() * 12) + 1;
-      const year = 2023 - Math.floor(Math.random() * 2);
-      const registrationDate = `${year}-${month.toString().padStart(2, "0")}-${day.toString().padStart(2, "0")}`;
-      
-      users.push({
-        id: `user-${i}`,
-        name,
-        email,
-        status,
-        registrationDate,
-        avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}`
-      });
-    }
-    
-    return users;
-  };
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
 
   // Filter users based on search and status
   useEffect(() => {
@@ -205,6 +166,7 @@ const AdminUsers = () => {
       
       // Update local state
       setUsers(prev => prev.filter(user => user.id !== currentUser.id));
+      setFilteredUsers(prev => prev.filter(user => user.id !== currentUser.id));
       
       toast({
         title: t("User Deleted"),
@@ -265,11 +227,8 @@ const AdminUsers = () => {
   return (
     <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto mb-4">
+        <TabsList className="grid w-full grid-cols-1 max-w-md mx-auto mb-4">
           <TabsTrigger value="list">
-            {t("User List")}
-          </TabsTrigger>
-          <TabsTrigger value="create">
             <UserPlus className="w-4 h-4 mr-2" />
             {t("Create User")}
           </TabsTrigger>
@@ -354,22 +313,18 @@ const AdminUsers = () => {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              className="text-blue-600"
+                            <button 
+                              className="text-blue-600 p-1 cursor-pointer hover:bg-blue-50 rounded-full"
                               onClick={() => {
                                 setCurrentUser(user);
                                 setIsResetPasswordDialogOpen(true);
                               }}
                             >
                               <KeyRound size={16} />
-                            </Button>
+                            </button>
                             {user.status === "inactive" ? (
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                className="text-green-600 hover:bg-green-50"
+                              <button 
+                                className="text-green-600 p-1 cursor-pointer hover:bg-green-50 rounded-full"
                                 onClick={() => {
                                   setCurrentUser(user);
                                   setNewStatus("active");
@@ -377,12 +332,10 @@ const AdminUsers = () => {
                                 }}
                               >
                                 <UserCheck size={16} />
-                              </Button>
+                              </button>
                             ) : (
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                className="text-amber-600 hover:bg-amber-50"
+                              <button 
+                                className="text-amber-600 p-1 cursor-pointer hover:bg-amber-50 rounded-full"
                                 onClick={() => {
                                   setCurrentUser(user);
                                   setNewStatus("inactive");
@@ -390,19 +343,17 @@ const AdminUsers = () => {
                                 }}
                               >
                                 <UserX size={16} />
-                              </Button>
+                              </button>
                             )}
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              className="text-red-600 hover:bg-red-50"
-                              onClick={() => {
-                                setCurrentUser(user);
-                                setIsDeleteDialogOpen(true);
-                              }}
-                            >
-                              <Trash2 size={16} />
-                            </Button>
+                            <button 
+                                className="text-red-600 p-1 cursor-pointer hover:bg-red-50 rounded-full"
+                                onClick={() => {
+                                  setCurrentUser(user);
+                                  setIsDeleteDialogOpen(true);
+                                }}
+                              >
+                                <Trash2 size={16} />
+                              </button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -419,9 +370,7 @@ const AdminUsers = () => {
               {t("Refresh User List")}
             </Button>
           </div>
-        </TabsContent>
-        
-        <TabsContent value="create">
+          
           <div className="bg-white rounded-lg shadow p-6">
             <h2 className="text-xl font-bold mb-6">{t("Create New User")}</h2>
             <UserCreationForm />

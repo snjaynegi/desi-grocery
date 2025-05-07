@@ -31,7 +31,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, UserCheck, UserX, Trash2, KeyRound, UserPlus, Loader2 } from "lucide-react";
+import { Search, UserCheck, UserX, Trash2, KeyRound, UserPlus, Loader2, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import UserCreationForm from "./UserCreationForm";
 import { User } from "@/types/user";
@@ -44,6 +44,7 @@ const AdminUsers = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("list");
+  const [fetchError, setFetchError] = useState<string | null>(null);
   
   // Dialog states
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -55,6 +56,8 @@ const AdminUsers = () => {
   // Fetch users from Supabase
   const fetchUsers = async () => {
     setLoading(true);
+    setFetchError(null);
+    
     try {
       // Fetch all users
       const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
@@ -80,15 +83,26 @@ const AdminUsers = () => {
         setUsers(formattedUsers);
         setFilteredUsers(formattedUsers);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching users:", error);
-      // Don't show error toast, just initialize with empty arrays
-      setUsers([]);
-      setFilteredUsers([]);
+      setFetchError(error.message || "Failed to load users");
+      
+      // Show toast for error
+      toast({
+        title: t("Error"),
+        description: error.message || t("Failed to load users"),
+        variant: "destructive",
+        duration: 5000
+      });
     } finally {
       setLoading(false);
     }
   };
+
+  // Load users on component mount
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   // Filter users based on search and status
   useEffect(() => {
@@ -125,7 +139,8 @@ const AdminUsers = () => {
       
       toast({
         title: t("Password Reset Link Sent"),
-        description: t("A password reset link has been sent to the user's email")
+        description: t("A password reset link has been sent to the user's email"),
+        duration: 5000
       });
       
     } catch (error: any) {
@@ -133,7 +148,8 @@ const AdminUsers = () => {
       toast({
         title: t("Error"),
         description: error.message || t("Failed to reset password"),
-        variant: "destructive"
+        variant: "destructive",
+        duration: 5000
       });
     } finally {
       setIsResetPasswordDialogOpen(false);
@@ -158,7 +174,8 @@ const AdminUsers = () => {
       
       toast({
         title: t("User Deleted"),
-        description: t("The user has been permanently deleted")
+        description: t("The user has been permanently deleted"),
+        duration: 5000
       });
       
     } catch (error: any) {
@@ -166,7 +183,8 @@ const AdminUsers = () => {
       toast({
         title: t("Error"),
         description: error.message || t("Failed to delete user"),
-        variant: "destructive"
+        variant: "destructive",
+        duration: 5000
       });
     } finally {
       setIsDeleteDialogOpen(false);
@@ -197,7 +215,8 @@ const AdminUsers = () => {
       
       toast({
         title: t("Status Updated"),
-        description: `${currentUser.name} ${newStatus === "active" ? t("activated") : t("deactivated")}`
+        description: `${currentUser.name} ${newStatus === "active" ? t("activated") : t("deactivated")}`,
+        duration: 5000
       });
       
     } catch (error: any) {
@@ -205,180 +224,218 @@ const AdminUsers = () => {
       toast({
         title: t("Error"),
         description: error.message || t("Failed to update user status"),
-        variant: "destructive"
+        variant: "destructive",
+        duration: 5000
       });
     } finally {
       setIsStatusDialogOpen(false);
     }
   };
 
+  // Handle user creation success
+  const handleUserCreated = () => {
+    // Refresh the user list after a new user is created
+    fetchUsers();
+    // Automatically switch back to the list view
+    setActiveTab("list");
+    
+    toast({
+      title: t("User Created"),
+      description: t("The new user has been created successfully"),
+      duration: 5000
+    });
+  };
+
   return (
     <div className="space-y-4">
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="mb-4">
-          <Button 
-            onClick={() => setActiveTab(activeTab === "list" ? "create" : "list")}
-            className="w-full bg-[#0f1729] text-white hover:bg-[#1a2540] py-6"
-          >
-            {activeTab === "create" ? (
-              <span className="flex items-center">
-                <KeyRound className="h-5 w-5 mr-2" />
-                {t("User Account Management")}
-              </span>
-            ) : (
-              <span className="flex items-center justify-center">
-                <UserPlus className="h-5 w-5 mr-2" />
-                {t("Create User")}
-              </span>
-            )}
-          </Button>
-        </div>
-        
-        <TabsContent value="list" className="space-y-4">
-          <div className="bg-[#0f1729] rounded-lg shadow p-6 text-white">
-            <h2 className="text-xl font-bold mb-6">{t("User Account Management")}</h2>
+      {activeTab === "list" ? (
+        <Button 
+          onClick={() => setActiveTab("create")}
+          className="w-full bg-[#0f1729] text-white hover:bg-[#1a2540] py-6"
+        >
+          <span className="flex items-center justify-center">
+            <UserPlus className="h-5 w-5 mr-2" />
+            {t("Create User")}
+          </span>
+        </Button>
+      ) : (
+        <Button 
+          onClick={() => setActiveTab("list")}
+          className="w-full bg-[#0f1729] text-white hover:bg-[#1a2540] py-6"
+        >
+          <span className="flex items-center">
+            <KeyRound className="h-5 w-5 mr-2" />
+            {t("User Account Management")}
+          </span>
+        </Button>
+      )}
+      
+      <TabsContent value="list" className="space-y-4 mt-4">
+        <div className="bg-[#0f1729] rounded-lg shadow p-6 text-white">
+          <h2 className="text-xl font-bold mb-6">{t("User Account Management")}</h2>
 
-            <div className="flex flex-col md:flex-row gap-4 mb-6">
-              <div className="flex-1 relative">
-                <Input
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={t("Search users by name or email...")}
-                  className="pl-10 bg-[#161f38] border-[#2a3655] text-white"
-                />
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              </div>
-              
-              <div className="w-full md:w-48">
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="bg-[#161f38] border-[#2a3655] text-white">
-                    <SelectValue placeholder={t("All Users")} />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#161f38] border-[#2a3655] text-white">
-                    <SelectItem value="all">{t("All Users")}</SelectItem>
-                    <SelectItem value="active">{t("Active Users")}</SelectItem>
-                    <SelectItem value="inactive">{t("Inactive Users")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="flex-1 relative">
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t("Search users by name or email...")}
+                className="pl-10 bg-[#161f38] border-[#2a3655] text-white"
+              />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             </div>
+            
+            <div className="w-full md:w-48">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="bg-[#161f38] border-[#2a3655] text-white">
+                  <SelectValue placeholder={t("All Users")} />
+                </SelectTrigger>
+                <SelectContent className="bg-[#161f38] border-[#2a3655] text-white">
+                  <SelectItem value="all">{t("All Users")}</SelectItem>
+                  <SelectItem value="active">{t("Active Users")}</SelectItem>
+                  <SelectItem value="inactive">{t("Inactive Users")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-            <div className="rounded-md border border-[#2a3655] overflow-x-auto text-white">
-              <Table>
-                <TableHeader className="bg-[#161f38]">
+          <div className="rounded-md border border-[#2a3655] overflow-x-auto text-white">
+            <Table>
+              <TableHeader className="bg-[#161f38]">
+                <TableRow className="border-b border-[#2a3655] hover:bg-[#1a2540]">
+                  <TableHead className="text-white">{t("User")}</TableHead>
+                  <TableHead className="text-white">{t("Email")}</TableHead>
+                  <TableHead className="text-white">{t("Status")}</TableHead>
+                  <TableHead className="text-white">{t("Registration Date")}</TableHead>
+                  <TableHead className="text-right text-white">{t("Actions")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
                   <TableRow className="border-b border-[#2a3655] hover:bg-[#1a2540]">
-                    <TableHead className="text-white">{t("User")}</TableHead>
-                    <TableHead className="text-white">{t("Email")}</TableHead>
-                    <TableHead className="text-white">{t("Status")}</TableHead>
-                    <TableHead className="text-white">{t("Registration Date")}</TableHead>
-                    <TableHead className="text-right text-white">{t("Actions")}</TableHead>
+                    <TableCell colSpan={5} className="text-center py-8 text-white">
+                      <div className="flex justify-center">
+                        <Loader2 className="h-6 w-6 animate-spin" />
+                      </div>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loading ? (
-                    <TableRow className="border-b border-[#2a3655] hover:bg-[#1a2540]">
-                      <TableCell colSpan={5} className="text-center py-8 text-white">
-                        <div className="flex justify-center">
-                          <Loader2 className="h-6 w-6 animate-spin" />
+                ) : fetchError ? (
+                  <TableRow className="border-b border-[#2a3655] hover:bg-[#1a2540]">
+                    <TableCell colSpan={5} className="text-center py-8 text-white">
+                      <div className="flex flex-col items-center gap-2">
+                        <p>{t("Failed to load users")}</p>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={fetchUsers}
+                          className="border-[#2a3655] text-white hover:bg-[#1a2540]"
+                        >
+                          <RefreshCw className="h-4 w-4 mr-2" />
+                          {t("Try Again")}
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : filteredUsers.length === 0 ? (
+                  <TableRow className="border-b border-[#2a3655] hover:bg-[#1a2540]">
+                    <TableCell colSpan={5} className="text-center py-8 text-white">{t("No users found")}</TableCell>
+                  </TableRow>
+                ) : (
+                  filteredUsers.map((user) => (
+                    <TableRow key={user.id} className="border-b border-[#2a3655] hover:bg-[#1a2540]">
+                      <TableCell className="font-medium text-white">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-[#2a3655] rounded-full overflow-hidden flex-shrink-0">
+                            <img 
+                              src={user.avatar} 
+                              alt={user.name} 
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div>{user.name}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-white">{user.email}</TableCell>
+                      <TableCell className="text-white">
+                        <Badge variant={user.status === "active" ? "default" : "secondary"}>
+                          {user.status === "active" ? t("Active") : t("Inactive")}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-white">
+                        {new Date(user.registrationDate || "").toLocaleDateString()}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <button 
+                            className="text-blue-400 p-1 cursor-pointer hover:bg-[#2a3655] rounded-full"
+                            onClick={() => {
+                              setCurrentUser(user);
+                              setIsResetPasswordDialogOpen(true);
+                            }}
+                            aria-label="Reset password"
+                          >
+                            <KeyRound size={16} />
+                          </button>
+                          {user.status === "inactive" ? (
+                            <button 
+                              className="text-green-400 p-1 cursor-pointer hover:bg-[#2a3655] rounded-full"
+                              onClick={() => {
+                                setCurrentUser(user);
+                                setNewStatus("active");
+                                setIsStatusDialogOpen(true);
+                              }}
+                              aria-label="Activate user"
+                            >
+                              <UserCheck size={16} />
+                            </button>
+                          ) : (
+                            <button 
+                              className="text-amber-400 p-1 cursor-pointer hover:bg-[#2a3655] rounded-full"
+                              onClick={() => {
+                                setCurrentUser(user);
+                                setNewStatus("inactive");
+                                setIsStatusDialogOpen(true);
+                              }}
+                              aria-label="Deactivate user"
+                            >
+                              <UserX size={16} />
+                            </button>
+                          )}
+                          <button 
+                              className="text-red-400 p-1 cursor-pointer hover:bg-[#2a3655] rounded-full"
+                              onClick={() => {
+                                setCurrentUser(user);
+                                setIsDeleteDialogOpen(true);
+                              }}
+                              aria-label="Delete user"
+                            >
+                              <Trash2 size={16} />
+                            </button>
                         </div>
                       </TableCell>
                     </TableRow>
-                  ) : filteredUsers.length === 0 ? (
-                    <TableRow className="border-b border-[#2a3655] hover:bg-[#1a2540]">
-                      <TableCell colSpan={5} className="text-center py-8 text-white">{t("No users found")}</TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredUsers.map((user) => (
-                      <TableRow key={user.id} className="border-b border-[#2a3655] hover:bg-[#1a2540]">
-                        <TableCell className="font-medium text-white">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-[#2a3655] rounded-full overflow-hidden flex-shrink-0">
-                              <img 
-                                src={user.avatar} 
-                                alt={user.name} 
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div>{user.name}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-white">{user.email}</TableCell>
-                        <TableCell className="text-white">
-                          <Badge variant={user.status === "active" ? "default" : "secondary"}>
-                            {user.status === "active" ? t("Active") : t("Inactive")}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-white">
-                          {new Date(user.registrationDate || "").toLocaleDateString()}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <button 
-                              className="text-blue-400 p-1 cursor-pointer hover:bg-[#2a3655] rounded-full"
-                              onClick={() => {
-                                setCurrentUser(user);
-                                setIsResetPasswordDialogOpen(true);
-                              }}
-                            >
-                              <KeyRound size={16} />
-                            </button>
-                            {user.status === "inactive" ? (
-                              <button 
-                                className="text-green-400 p-1 cursor-pointer hover:bg-[#2a3655] rounded-full"
-                                onClick={() => {
-                                  setCurrentUser(user);
-                                  setNewStatus("active");
-                                  setIsStatusDialogOpen(true);
-                                }}
-                              >
-                                <UserCheck size={16} />
-                              </button>
-                            ) : (
-                              <button 
-                                className="text-amber-400 p-1 cursor-pointer hover:bg-[#2a3655] rounded-full"
-                                onClick={() => {
-                                  setCurrentUser(user);
-                                  setNewStatus("inactive");
-                                  setIsStatusDialogOpen(true);
-                                }}
-                              >
-                                <UserX size={16} />
-                              </button>
-                            )}
-                            <button 
-                                className="text-red-400 p-1 cursor-pointer hover:bg-[#2a3655] rounded-full"
-                                onClick={() => {
-                                  setCurrentUser(user);
-                                  setIsDeleteDialogOpen(true);
-                                }}
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-            
-            <Button 
-              className="mt-6 bg-[#475569] hover:bg-[#64748b] text-white"
-              onClick={fetchUsers}
-            >
-              {t("Refresh User List")}
-            </Button>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
-        </TabsContent>
+          
+          <Button 
+            className="mt-6 bg-[#475569] hover:bg-[#64748b] text-white"
+            onClick={fetchUsers}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            {t("Refresh User List")}
+          </Button>
+        </div>
+      </TabsContent>
 
-        <TabsContent value="create">
-          <div className="bg-[#0f1729] rounded-lg shadow p-6 text-white">
-            <h2 className="text-xl font-bold mb-6">{t("Create New User")}</h2>
-            <UserCreationForm />
-          </div>
-        </TabsContent>
-      </Tabs>
+      <TabsContent value="create" className="mt-4">
+        <div className="bg-[#0f1729] rounded-lg shadow p-6 text-white">
+          <h2 className="text-xl font-bold mb-6">{t("Create New User")}</h2>
+          <UserCreationForm onUserCreated={handleUserCreated} />
+        </div>
+      </TabsContent>
 
       {/* Delete User Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

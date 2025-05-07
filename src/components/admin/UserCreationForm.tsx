@@ -16,7 +16,11 @@ interface UserFormData {
   username: string;
 }
 
-const UserCreationForm: React.FC = () => {
+interface UserCreationFormProps {
+  onUserCreated?: () => void;
+}
+
+const UserCreationForm: React.FC<UserCreationFormProps> = ({ onUserCreated }) => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState<UserFormData>({
     email: "",
@@ -105,7 +109,8 @@ const UserCreationForm: React.FC = () => {
       if (data.user) {
         toast({
           title: t("User created successfully"),
-          description: t("The new user has been added to the system")
+          description: t("The new user has been added to the system"),
+          duration: 5000
         });
         
         // Clear form
@@ -115,6 +120,12 @@ const UserCreationForm: React.FC = () => {
           name: "",
           username: "",
         });
+        setStatus("active");
+        
+        // Call the callback if provided
+        if (onUserCreated) {
+          onUserCreated();
+        }
       }
     } catch (error: any) {
       console.error("Error creating user:", error);
@@ -122,6 +133,7 @@ const UserCreationForm: React.FC = () => {
         title: t("Failed to create user"),
         description: error.message || t("An unexpected error occurred"),
         variant: "destructive",
+        duration: 5000
       });
     } finally {
       setIsLoading(false);

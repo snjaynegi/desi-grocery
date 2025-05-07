@@ -31,11 +31,11 @@ const Admin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-[#0b1121]">
       <Toaster />
-      <div className="bg-white shadow">
+      <div className="bg-[#0f1729] shadow">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <h1 className="text-xl font-bold">{t("Admin Dashboard")}</h1>
+          <h1 className="text-xl font-bold text-white">{t("Admin Dashboard")}</h1>
           <button
             onClick={handleLogout}
             className="px-3 py-1 text-sm bg-primary text-white hover:bg-primary/90 rounded flex items-center gap-2"
@@ -47,9 +47,9 @@ const Admin = () => {
 
       <div className="container mx-auto px-4 py-6">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2 max-w-md">
-            <TabsTrigger value="products">{t("Product Inventory")}</TabsTrigger>
-            <TabsTrigger value="users">{t("User Accounts")}</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 max-w-md bg-[#161f38]">
+            <TabsTrigger value="products" className="data-[state=active]:bg-primary">{t("Product Inventory")}</TabsTrigger>
+            <TabsTrigger value="users" className="data-[state=active]:bg-primary">{t("User Accounts")}</TabsTrigger>
           </TabsList>
           <TabsContent value="products">
             <AdminProducts />

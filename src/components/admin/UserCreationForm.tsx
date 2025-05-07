@@ -5,7 +5,6 @@ import { toast } from "@/components/ui/use-toast";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -130,99 +129,94 @@ const UserCreationForm: React.FC = () => {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle>{t("Create New User")}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">{t("Full Name")}</Label>
-            <Input
-              id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder={t("Enter full name")}
-              className={errors.name ? "border-red-500" : ""}
-            />
-            {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="username">{t("Username")}</Label>
-            <Input
-              id="username"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              placeholder={t("Enter username")}
-              className={errors.username ? "border-red-500" : ""}
-            />
-            {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="email">{t("Email")}</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder={t("Enter email address")}
-              className={errors.email ? "border-red-500" : ""}
-            />
-            {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="password">{t("Password")}</Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder={t("Enter password")}
-              className={errors.password ? "border-red-500" : ""}
-            />
-            {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="status">{t("Status")}</Label>
-            <Select
-              value={status}
-              onValueChange={(value: "active" | "inactive") => setStatus(value)}
-            >
-              <SelectTrigger id="status" className="w-full">
-                <SelectValue placeholder={t("Select status")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">{t("Active")}</SelectItem>
-                <SelectItem value="inactive">{t("Inactive")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <Button 
-            type="submit" 
-            className="w-full"
-            disabled={isLoading}
+    <div className="w-full max-w-md mx-auto">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="name" className="text-white">{t("Full Name")}</Label>
+          <Input
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            placeholder={t("Enter full name")}
+            className={`bg-[#161f38] border-[#2a3655] text-white ${errors.name ? "border-red-500" : ""}`}
+          />
+          {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="username" className="text-white">{t("Username")}</Label>
+          <Input
+            id="username"
+            name="username"
+            value={formData.username}
+            onChange={handleChange}
+            placeholder={t("Enter username")}
+            className={`bg-[#161f38] border-[#2a3655] text-white ${errors.username ? "border-red-500" : ""}`}
+          />
+          {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-white">{t("Email")}</Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder={t("Enter email address")}
+            className={`bg-[#161f38] border-[#2a3655] text-white ${errors.email ? "border-red-500" : ""}`}
+          />
+          {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="password" className="text-white">{t("Password")}</Label>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            value={formData.password}
+            onChange={handleChange}
+            placeholder={t("Enter password")}
+            className={`bg-[#161f38] border-[#2a3655] text-white ${errors.password ? "border-red-500" : ""}`}
+          />
+          {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="status" className="text-white">{t("Status")}</Label>
+          <Select
+            value={status}
+            onValueChange={(value: "active" | "inactive") => setStatus(value)}
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {t("Creating...")}
-              </>
-            ) : (
-              t("Create User")
-            )}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+            <SelectTrigger id="status" className="bg-[#161f38] border-[#2a3655] text-white w-full">
+              <SelectValue placeholder={t("Select status")} />
+            </SelectTrigger>
+            <SelectContent className="bg-[#161f38] border-[#2a3655] text-white">
+              <SelectItem value="active">{t("Active")}</SelectItem>
+              <SelectItem value="inactive">{t("Inactive")}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <Button 
+          type="submit" 
+          className="w-full bg-primary hover:bg-primary/80 text-white mt-4"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {t("Creating...")}
+            </>
+          ) : (
+            t("Create User")
+          )}
+        </Button>
+      </form>
+    </div>
   );
 };
 

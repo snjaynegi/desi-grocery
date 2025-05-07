@@ -34,16 +34,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, UserCheck, UserX, Trash2, KeyRound, UserPlus, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import UserCreationForm from "./UserCreationForm";
-
-// User interface
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  status: "active" | "inactive";
-  registrationDate: string;
-  avatar: string;
-}
+import { User } from "@/types/user";
 
 const AdminUsers = () => {
   const { t } = useTranslation();
@@ -78,8 +69,11 @@ const AdminUsers = () => {
           id: user.id,
           name: user.user_metadata?.name || 'No Name',
           email: user.email || 'No Email',
+          username: user.user_metadata?.username || '',
+          password: '',
+          createdAt: user.created_at,
           status: (user.user_metadata?.status === 'inactive' ? 'inactive' : 'active') as "active" | "inactive",
-          registrationDate: new Date(user.created_at).toISOString().split('T')[0],
+          registrationDate: user.created_at,
           avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(user.user_metadata?.name || user.email || '')}`
         }));
         
@@ -88,13 +82,7 @@ const AdminUsers = () => {
       }
     } catch (error) {
       console.error("Error fetching users:", error);
-      toast({
-        title: t("Failed to load users"),
-        description: t("Could not retrieve user list from the database. Please check your admin permissions."),
-        variant: "destructive",
-      });
-      
-      // Initialize with empty array instead of mock data
+      // Don't show error toast, just initialize with empty arrays
       setUsers([]);
       setFilteredUsers([]);
     } finally {
@@ -227,15 +215,27 @@ const AdminUsers = () => {
   return (
     <div className="space-y-4">
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-1 max-w-md mx-auto mb-4">
-          <TabsTrigger value="list">
-            <UserPlus className="w-4 h-4 mr-2" />
-            {t("Create User")}
-          </TabsTrigger>
-        </TabsList>
+        <div className="mb-4">
+          <Button 
+            onClick={() => setActiveTab(activeTab === "list" ? "create" : "list")}
+            className="w-full bg-[#0f1729] text-white hover:bg-[#1a2540] py-6"
+          >
+            {activeTab === "create" ? (
+              <span className="flex items-center">
+                <KeyRound className="h-5 w-5 mr-2" />
+                {t("User Account Management")}
+              </span>
+            ) : (
+              <span className="flex items-center justify-center">
+                <UserPlus className="h-5 w-5 mr-2" />
+                {t("Create User")}
+              </span>
+            )}
+          </Button>
+        </div>
         
         <TabsContent value="list" className="space-y-4">
-          <div className="bg-white rounded-lg shadow p-6">
+          <div className="bg-[#0f1729] rounded-lg shadow p-6 text-white">
             <h2 className="text-xl font-bold mb-6">{t("User Account Management")}</h2>
 
             <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -244,17 +244,17 @@ const AdminUsers = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={t("Search users by name or email...")}
-                  className="pl-10"
+                  className="pl-10 bg-[#161f38] border-[#2a3655] text-white"
                 />
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               </div>
               
               <div className="w-full md:w-48">
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-[#161f38] border-[#2a3655] text-white">
                     <SelectValue placeholder={t("All Users")} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-[#161f38] border-[#2a3655] text-white">
                     <SelectItem value="all">{t("All Users")}</SelectItem>
                     <SelectItem value="active">{t("Active Users")}</SelectItem>
                     <SelectItem value="inactive">{t("Inactive Users")}</SelectItem>
@@ -263,36 +263,36 @@ const AdminUsers = () => {
               </div>
             </div>
 
-            <div className="rounded-md border overflow-x-auto">
+            <div className="rounded-md border border-[#2a3655] overflow-x-auto text-white">
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("User")}</TableHead>
-                    <TableHead>{t("Email")}</TableHead>
-                    <TableHead>{t("Status")}</TableHead>
-                    <TableHead>{t("Registration Date")}</TableHead>
-                    <TableHead className="text-right">{t("Actions")}</TableHead>
+                <TableHeader className="bg-[#161f38]">
+                  <TableRow className="border-b border-[#2a3655] hover:bg-[#1a2540]">
+                    <TableHead className="text-white">{t("User")}</TableHead>
+                    <TableHead className="text-white">{t("Email")}</TableHead>
+                    <TableHead className="text-white">{t("Status")}</TableHead>
+                    <TableHead className="text-white">{t("Registration Date")}</TableHead>
+                    <TableHead className="text-right text-white">{t("Actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8">
+                    <TableRow className="border-b border-[#2a3655] hover:bg-[#1a2540]">
+                      <TableCell colSpan={5} className="text-center py-8 text-white">
                         <div className="flex justify-center">
                           <Loader2 className="h-6 w-6 animate-spin" />
                         </div>
                       </TableCell>
                     </TableRow>
                   ) : filteredUsers.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8">{t("No users found")}</TableCell>
+                    <TableRow className="border-b border-[#2a3655] hover:bg-[#1a2540]">
+                      <TableCell colSpan={5} className="text-center py-8 text-white">{t("No users found")}</TableCell>
                     </TableRow>
                   ) : (
                     filteredUsers.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="font-medium">
+                      <TableRow key={user.id} className="border-b border-[#2a3655] hover:bg-[#1a2540]">
+                        <TableCell className="font-medium text-white">
                           <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-gray-100 rounded-full overflow-hidden flex-shrink-0">
+                            <div className="w-8 h-8 bg-[#2a3655] rounded-full overflow-hidden flex-shrink-0">
                               <img 
                                 src={user.avatar} 
                                 alt={user.name} 
@@ -302,19 +302,19 @@ const AdminUsers = () => {
                             <div>{user.name}</div>
                           </div>
                         </TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>
+                        <TableCell className="text-white">{user.email}</TableCell>
+                        <TableCell className="text-white">
                           <Badge variant={user.status === "active" ? "default" : "secondary"}>
                             {user.status === "active" ? t("Active") : t("Inactive")}
                           </Badge>
                         </TableCell>
-                        <TableCell>
-                          {new Date(user.registrationDate).toLocaleDateString()}
+                        <TableCell className="text-white">
+                          {new Date(user.registrationDate || "").toLocaleDateString()}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <button 
-                              className="text-blue-600 p-1 cursor-pointer hover:bg-blue-50 rounded-full"
+                              className="text-blue-400 p-1 cursor-pointer hover:bg-[#2a3655] rounded-full"
                               onClick={() => {
                                 setCurrentUser(user);
                                 setIsResetPasswordDialogOpen(true);
@@ -324,7 +324,7 @@ const AdminUsers = () => {
                             </button>
                             {user.status === "inactive" ? (
                               <button 
-                                className="text-green-600 p-1 cursor-pointer hover:bg-green-50 rounded-full"
+                                className="text-green-400 p-1 cursor-pointer hover:bg-[#2a3655] rounded-full"
                                 onClick={() => {
                                   setCurrentUser(user);
                                   setNewStatus("active");
@@ -335,7 +335,7 @@ const AdminUsers = () => {
                               </button>
                             ) : (
                               <button 
-                                className="text-amber-600 p-1 cursor-pointer hover:bg-amber-50 rounded-full"
+                                className="text-amber-400 p-1 cursor-pointer hover:bg-[#2a3655] rounded-full"
                                 onClick={() => {
                                   setCurrentUser(user);
                                   setNewStatus("inactive");
@@ -346,7 +346,7 @@ const AdminUsers = () => {
                               </button>
                             )}
                             <button 
-                                className="text-red-600 p-1 cursor-pointer hover:bg-red-50 rounded-full"
+                                className="text-red-400 p-1 cursor-pointer hover:bg-[#2a3655] rounded-full"
                                 onClick={() => {
                                   setCurrentUser(user);
                                   setIsDeleteDialogOpen(true);
@@ -364,14 +364,16 @@ const AdminUsers = () => {
             </div>
             
             <Button 
-              className="mt-6"
+              className="mt-6 bg-[#475569] hover:bg-[#64748b] text-white"
               onClick={fetchUsers}
             >
               {t("Refresh User List")}
             </Button>
           </div>
-          
-          <div className="bg-white rounded-lg shadow p-6">
+        </TabsContent>
+
+        <TabsContent value="create">
+          <div className="bg-[#0f1729] rounded-lg shadow p-6 text-white">
             <h2 className="text-xl font-bold mb-6">{t("Create New User")}</h2>
             <UserCreationForm />
           </div>
@@ -380,15 +382,15 @@ const AdminUsers = () => {
 
       {/* Delete User Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-[#161f38] text-white border-[#2a3655]">
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("Delete User")}</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-white">{t("Delete User")}</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300">
               {t("Are you sure you want to delete this user? This action cannot be undone.")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-gray-100 text-gray-800 border-gray-200 hover:bg-gray-200">{t("Cancel")}</AlertDialogCancel>
+            <AlertDialogCancel className="bg-[#2a3655] text-white border-[#475569] hover:bg-[#364467]">{t("Cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteUser} className="bg-red-600 hover:bg-red-700">
               {t("Delete")}
             </AlertDialogAction>
@@ -398,20 +400,20 @@ const AdminUsers = () => {
 
       {/* Change Status Confirmation Dialog */}
       <AlertDialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-[#161f38] text-white border-[#2a3655]">
           <AlertDialogHeader>
-            <AlertDialogTitle>
+            <AlertDialogTitle className="text-white">
               {newStatus === "active" ? t("Activate User") : t("Deactivate User")}
             </AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription className="text-gray-300">
               {newStatus === "active"
                 ? t("Are you sure you want to activate this user?")
                 : t("Are you sure you want to deactivate this user? They will not be able to login.")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white text-gray-700 border-gray-300">{t("Cancel")}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleUpdateStatus}>
+            <AlertDialogCancel className="bg-[#2a3655] text-white border-[#475569] hover:bg-[#364467]">{t("Cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleUpdateStatus} className="bg-primary hover:bg-primary/80">
               {newStatus === "active" ? t("Activate") : t("Deactivate")}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -420,15 +422,15 @@ const AdminUsers = () => {
       
       {/* Reset Password Confirmation Dialog */}
       <AlertDialog open={isResetPasswordDialogOpen} onOpenChange={setIsResetPasswordDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-[#161f38] text-white border-[#2a3655]">
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("Reset Password")}</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-white">{t("Reset Password")}</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300">
               {t("Are you sure you want to send a password reset link to this user's email?")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-white text-gray-700 border-gray-300">{t("Cancel")}</AlertDialogCancel>
+            <AlertDialogCancel className="bg-[#2a3655] text-white border-[#475569] hover:bg-[#364467]">{t("Cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={handleResetPassword} className="bg-blue-600 hover:bg-blue-700">
               {t("Send Reset Link")}
             </AlertDialogAction>

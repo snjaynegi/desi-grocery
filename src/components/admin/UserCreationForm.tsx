@@ -110,7 +110,7 @@ const UserCreationForm: React.FC<UserCreationFormProps> = ({ onUserCreated }) =>
         toast({
           title: t("User created successfully"),
           description: t("The new user has been added to the system"),
-          duration: 5000
+          duration: 3000
         });
         
         // Clear form
@@ -133,7 +133,7 @@ const UserCreationForm: React.FC<UserCreationFormProps> = ({ onUserCreated }) =>
         title: t("Failed to create user"),
         description: error.message || t("An unexpected error occurred"),
         variant: "destructive",
-        duration: 5000
+        duration: 3000
       });
     } finally {
       setIsLoading(false);
@@ -151,7 +151,7 @@ const UserCreationForm: React.FC<UserCreationFormProps> = ({ onUserCreated }) =>
             value={formData.name}
             onChange={handleChange}
             placeholder={t("Enter full name")}
-            className={`bg-[#161f38] border-[#2a3655] text-white ${errors.name ? "border-red-500" : ""}`}
+            className={`bg-[#0c1221] border-[#232e47] text-white ${errors.name ? "border-red-500" : ""}`}
           />
           {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
         </div>
@@ -164,7 +164,7 @@ const UserCreationForm: React.FC<UserCreationFormProps> = ({ onUserCreated }) =>
             value={formData.username}
             onChange={handleChange}
             placeholder={t("Enter username")}
-            className={`bg-[#161f38] border-[#2a3655] text-white ${errors.username ? "border-red-500" : ""}`}
+            className={`bg-[#0c1221] border-[#232e47] text-white ${errors.username ? "border-red-500" : ""}`}
           />
           {errors.username && <p className="text-red-500 text-xs mt-1">{errors.username}</p>}
         </div>
@@ -178,7 +178,7 @@ const UserCreationForm: React.FC<UserCreationFormProps> = ({ onUserCreated }) =>
             value={formData.email}
             onChange={handleChange}
             placeholder={t("Enter email address")}
-            className={`bg-[#161f38] border-[#2a3655] text-white ${errors.email ? "border-red-500" : ""}`}
+            className={`bg-[#0c1221] border-[#232e47] text-white ${errors.email ? "border-red-500" : ""}`}
           />
           {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
         </div>
@@ -192,7 +192,7 @@ const UserCreationForm: React.FC<UserCreationFormProps> = ({ onUserCreated }) =>
             value={formData.password}
             onChange={handleChange}
             placeholder={t("Enter password")}
-            className={`bg-[#161f38] border-[#2a3655] text-white ${errors.password ? "border-red-500" : ""}`}
+            className={`bg-[#0c1221] border-[#232e47] text-white ${errors.password ? "border-red-500" : ""}`}
           />
           {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
         </div>
@@ -203,10 +203,10 @@ const UserCreationForm: React.FC<UserCreationFormProps> = ({ onUserCreated }) =>
             value={status}
             onValueChange={(value: "active" | "inactive") => setStatus(value)}
           >
-            <SelectTrigger id="status" className="bg-[#161f38] border-[#2a3655] text-white w-full">
+            <SelectTrigger id="status" className="bg-[#0c1221] border-[#232e47] text-white w-full">
               <SelectValue placeholder={t("Select status")} />
             </SelectTrigger>
-            <SelectContent className="bg-[#161f38] border-[#2a3655] text-white">
+            <SelectContent className="bg-[#0c1221] border-[#232e47] text-white">
               <SelectItem value="active">{t("Active")}</SelectItem>
               <SelectItem value="inactive">{t("Inactive")}</SelectItem>
             </SelectContent>

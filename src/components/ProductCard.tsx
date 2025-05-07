@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
@@ -5,6 +6,7 @@ import { Heart, ImageOff, RotateCcw } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
+import { useAuth } from "../context/AuthContext";
 import { useSupabaseClient } from "@supabase/auth-helpers-react";
 
 interface Product {
@@ -26,6 +28,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const { state: wishlistState, dispatch: wishlistDispatch } = useWishlist();
   const [imageError, setImageError] = useState(false);
   const supabase = useSupabaseClient();
+  const { user } = useAuth();
   
   useEffect(() => {
     const recordProductView = async () => {
@@ -68,14 +71,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
   }, [product.id, supabase]);
 
   const handleAddToCart = () => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-    
-    if (!isLoggedIn) {
+    if (!user) {
       toast({
         title: t("Please sign in"),
         description: t("Sign in to add items to your cart"),
         variant: "destructive",
       });
+      navigate("/login");
       return;
     }
     
@@ -90,14 +92,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
   };
 
   const handleToggleWishlist = () => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-    
-    if (!isLoggedIn) {
+    if (!user) {
       toast({
         title: t("Please sign in"),
         description: t("Sign in to add items to your wishlist"),
         variant: "destructive",
       });
+      navigate("/login");
       return;
     }
     

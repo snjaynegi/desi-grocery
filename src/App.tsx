@@ -5,10 +5,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import { WishlistProvider } from "./context/WishlistContext";
 import { ThemeProvider } from "./context/ThemeContext";
-import { AuthProvider } from "./context/AuthContext";
 import "./i18n/config";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -39,9 +39,9 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <ThemeProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <AuthProvider>
+          <AuthProvider>
+            <CartProvider>
+              <WishlistProvider>
                 <TooltipProvider>
                   <Toaster />
                   <Sonner />
@@ -97,9 +97,9 @@ const App = () => {
                     </Routes>
                   </React.Suspense>
                 </TooltipProvider>
-              </AuthProvider>
-            </WishlistProvider>
-          </CartProvider>
+              </WishlistProvider>
+            </CartProvider>
+          </AuthProvider>
         </ThemeProvider>
       </BrowserRouter>
     </QueryClientProvider>

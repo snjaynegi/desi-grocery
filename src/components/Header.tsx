@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useCart } from "../context/CartContext";
@@ -45,9 +46,9 @@ const Header = ({ showSearch, searchQuery, onSearchChange }: HeaderProps) => {
           <Link 
             to="/" 
             className="text-2xl font-bold text-[#4F7942] hover:text-primary transition-colors dark:text-green-400"
-            aria-label={t("Desi Grocery")}
+            aria-label={t("Fresh Basket")}
           >
-            {t("Desi Grocery")}
+            {t("Fresh Basket")}
           </Link>
 
           <div className="flex items-center space-x-6">

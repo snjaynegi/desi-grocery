@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import type {
@@ -6,7 +7,7 @@ import type {
 } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_REMOVE_DELAY = 3000 // Set to 3 seconds for auto-dismissal
 
 type ToasterToast = ToastProps & {
   id: string
@@ -148,6 +149,11 @@ function toast({ ...props }: Toast) {
       toast: { ...props, id },
     })
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
+
+  // Auto-dismiss after the default duration if not specified
+  if (props.duration === undefined) {
+    props.duration = 3000; // 3 seconds default
+  }
 
   dispatch({
     type: "ADD_TOAST",

@@ -44,6 +44,7 @@ const AdminUsers = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("list");
+  const [error, setError] = useState<string | null>(null);
   
   // Dialog states
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -55,6 +56,7 @@ const AdminUsers = () => {
   // Fetch users from Supabase
   const fetchUsers = async () => {
     setLoading(true);
+    setError(null);
     
     try {
       // Fetch all users
@@ -84,10 +86,13 @@ const AdminUsers = () => {
     } catch (error: any) {
       console.error("Error fetching users:", error);
       
+      // Store error message but don't display it in the UI
+      setError(error.message || "Failed to load users");
+      
       // Show toast for error
       toast({
         title: t("Error"),
-        description: error.message || t("Failed to load users"),
+        description: t("Failed to load users. Please try again."),
         variant: "destructive",
         duration: 3000
       });
@@ -245,25 +250,25 @@ const AdminUsers = () => {
 
   return (
     <div className="space-y-4">
-      {activeTab === "list" ? (
-        <Button 
-          onClick={() => setActiveTab("create")}
-          className="w-full bg-[#0c1221] text-white hover:bg-[#161f38] py-6 flex items-center justify-center gap-2"
-        >
-          <UserPlus className="h-5 w-5" />
-          {t("Create User")}
-        </Button>
-      ) : (
-        <Button 
-          onClick={() => setActiveTab("list")}
-          className="w-full bg-[#0c1221] text-white hover:bg-[#161f38] py-6"
-        >
-          <KeyRound className="h-5 w-5 mr-2" />
-          {t("User Account Management")}
-        </Button>
-      )}
+      {/* Create User Button */}
+      <Button 
+        onClick={() => setActiveTab(activeTab === "list" ? "create" : "list")}
+        className="w-full bg-[#0c1221] text-white hover:bg-[#161f38] py-6 flex items-center justify-center gap-2"
+      >
+        {activeTab === "list" ? (
+          <>
+            <UserPlus className="h-5 w-5" />
+            {t("Create User")}
+          </>
+        ) : (
+          <>
+            <KeyRound className="h-5 w-5 mr-2" />
+            {t("User Account Management")}
+          </>
+        )}
+      </Button>
       
-      <TabsContent value="list" className="space-y-4 mt-4">
+      {activeTab === "list" ? (
         <div className="bg-[#131b2e] rounded-lg shadow p-6 text-white">
           <h2 className="text-xl font-bold mb-6">{t("User Account Management")}</h2>
 
@@ -375,15 +380,15 @@ const AdminUsers = () => {
                           </button>
                         )}
                         <button 
-                            className="text-red-400 p-1 cursor-pointer hover:bg-[#232e47] rounded-full"
-                            onClick={() => {
-                              setCurrentUser(user);
-                              setIsDeleteDialogOpen(true);
-                            }}
-                            aria-label="Delete user"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                          className="text-red-400 p-1 cursor-pointer hover:bg-[#232e47] rounded-full"
+                          onClick={() => {
+                            setCurrentUser(user);
+                            setIsDeleteDialogOpen(true);
+                          }}
+                          aria-label="Delete user"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -400,14 +405,12 @@ const AdminUsers = () => {
             {t("Refresh User List")}
           </Button>
         </div>
-      </TabsContent>
-
-      <TabsContent value="create" className="mt-4">
+      ) : (
         <div className="bg-[#131b2e] rounded-lg shadow p-6 text-white">
           <h2 className="text-xl font-bold mb-6">{t("Create New User")}</h2>
           <UserCreationForm onUserCreated={handleUserCreated} />
         </div>
-      </TabsContent>
+      )}
 
       {/* Delete User Confirmation Dialog */}
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

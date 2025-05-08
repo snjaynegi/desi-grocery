@@ -15,7 +15,7 @@ import AdminUsers from "../components/admin/AdminUsers";
 const Admin = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("users"); // Changed default tab to users
+  const [activeTab, setActiveTab] = useState("users"); // Default tab is users
 
   // Auth check
   useEffect(() => {

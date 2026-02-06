@@ -1,6 +1,7 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 import { toast } from "@/components/ui/use-toast";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -12,7 +13,8 @@ const ProductDetail = () => {
   const { id } = useParams();
   const { t } = useTranslation();
   const { dispatch } = useCart();
-  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   // For demo purposes, we'll use the same product data with additional fields
   const dummyProducts = [
@@ -181,12 +183,13 @@ const ProductDetail = () => {
   }
 
   const handleAddToCart = () => {
-    if (!isLoggedIn) {
+    if (!user) {
       toast({
         title: t("Please sign in"),
         description: t("You need to sign in to add items to cart"),
         variant: "destructive",
       });
+      navigate("/login");
       return;
     }
 
@@ -300,7 +303,7 @@ const ProductDetail = () => {
               </div>
               <button
                 onClick={handleAddToCart}
-                className="mt-4 w-full bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors"
+                className="mt-4 w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
               >
                 {t("Add to Cart")}
               </button>
